@@ -4,10 +4,14 @@ import { aiIntents } from './ai-intents.js';
 
 export { aiPlan, aiIntents };
 
+export const createAi = () => ({ plan: null, elapsed: 0 });
+
 // One tick of the computer's turn: plan once when its aim phase starts, then play the plan out.
-// ai = { plan, elapsed }; the caller sets plan to null whenever a new turn begins.
+// ai = createAi(). A turn only ends through 'settling', which the computer's own turn always
+// ticks through, so that is where the spent plan is dropped.
 export function aiTick(ai, world, dt, rng) {
   const phase = world.turn.phase;
+  if (phase === 'settling') ai.plan = null;
   if (phase === 'aim' && !ai.plan) {
     ai.plan = aiPlan(world, rng);
     ai.elapsed = 0;

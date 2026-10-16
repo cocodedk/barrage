@@ -3,7 +3,7 @@
 // (slow motion). Events drain every tick into fx, audio and the terrain canvas.
 import { createWorld, stepWorld, TICK } from '../core/world.js';
 import { endMatch } from '../core/turns.js';
-import { aiTick } from '../core/ai.js';
+import { aiTick, createAi } from '../core/ai.js';
 import { inFlight } from '../core/weapons.js';
 import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
@@ -39,7 +39,7 @@ export function createMatch(canvas, level, mode, seed, opts = {}) {
 function freshRun(m, worldRng) {
   m.world = createWorld(m.level, m.mode, worldRng);
   if (m.attract) for (const t of m.world.teams) t.ai = { skill: ATTRACT_SKILL };
-  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, overTime: 0 });
+  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: createAi(), acc: 0, overTime: 0 });
 }
 
 // The title battle is over: fight it again on the same battlefield. The same seed grows the
@@ -57,10 +57,7 @@ function drain(m) {
   for (const ev of world.events) {
     applyEvent(m.fx, ev, m.fxRng, world.level, world);
     if (ev.type === 'crater') m.view.onCrater(ev.x, ev.y, ev.r);
-    if (ev.type === 'turn') {
-      m.ai.plan = null;
-      resetControls(m.controls); // the next airstrike marker starts at the new soldier
-    }
+    if (ev.type === 'turn') resetControls(m.controls); // the next airstrike marker starts at the new soldier
     if (m.attract) continue;
     if (ev.type === 'win' && m.mode === 'campaign' && ev.winner === 0) unlockLevel(m.level.id + 1); // saved now, not when the card shows
     if (ev.type === 'win') play(m.mode === 'campaign' && ev.winner !== 0 ? 'lose' : 'win'); // computer won: no fanfare

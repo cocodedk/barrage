@@ -6,7 +6,7 @@ import { makeRng } from '../../src/core/rng.js';
 import { LEVELS } from '../../src/core/levels.js';
 import { createWorld, stepWorld } from '../../src/core/world.js';
 import { unitAtRest } from '../../src/core/units.js';
-import { aiTick } from '../../src/core/ai.js';
+import { aiTick, createAi } from '../../src/core/ai.js';
 import { DT } from './helpers.js';
 
 const SKILL = 0.75; // the title screen's attract matches
@@ -19,17 +19,13 @@ function soak(level, seed) {
   const world = createWorld(level, 'versus', rng);
   for (const t of world.teams) t.ai = { skill: SKILL };
   const hang = new Map(); // unit id -> { x, y, s }
-  const ai = { plan: null, elapsed: 0 };
+  const ai = createAi();
   let turns = 0;
   let worst = { s: 0 };
   let time = 0;
   for (; world.winner == null && time < MAX_GAME_TIME; time += DT) {
     stepWorld(world, DT, aiTick(ai, world, DT, rng), rng);
-    for (const ev of world.events) {
-      if (ev.type !== 'turn') continue;
-      ai.plan = null;
-      turns++;
-    }
+    for (const ev of world.events) if (ev.type === 'turn') turns++;
     world.events.length = 0;
     for (const team of world.teams) {
       for (const u of team.units) {

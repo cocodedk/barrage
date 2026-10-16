@@ -164,7 +164,7 @@ const ease = (u) => 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2; // ease-out wit
 function banner(ctx, world, hud, t) {
   const age = t - hud.t0;
   const total = BANNER_IN + BANNER_HOLD + BANNER_OUT;
-  if (age < 0 || age > total) return;
+  if (hud.quiet || age < 0 || age > total) return;
   const team = world.teams[world.turn.team];
   const y = -60 + ease(Math.min(1, age / BANNER_IN)) * 330;
   ctx.globalAlpha = age > total - BANNER_OUT ? (total - age) / BANNER_OUT : 1;
@@ -179,7 +179,7 @@ function banner(ctx, world, hud, t) {
   ctx.globalAlpha = 1;
 }
 
-// hud: the view's HUD state { key, t0 } (banner timing).
+// hud: the view's HUD state { key, t0, quiet } (banner timing; quiet hides it).
 export function drawHud(ctx, world, hud, t) {
   const turn = world.turn;
   const key = `${turn.team}:${turn.unit}`;

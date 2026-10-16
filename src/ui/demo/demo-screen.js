@@ -34,7 +34,7 @@ export function demoScreen(m, act) {
   const runner = createRunner(STEPS, m.fx);
   m.pilot = pilotFor(runner);
   startStep(runner, m.world, 0);
-  m.view.hud.key = '0:0'; // the turn never changes hands, so no "Blue team" banner over the caption
+  m.view.hud.quiet = true; // no turn banner over the caption
   m.world.teams[0].name = 'You';
   m.world.teams[1].name = 'Enemy';
 
