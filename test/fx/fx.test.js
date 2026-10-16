@@ -89,7 +89,7 @@ test('no gravestone for a death in the liquid, but one just above it', () => {
 test('death adds sparks and a gravestone', () => {
   const fx = createFx();
   applyEvent(fx, { type: 'death', unit: 2, x: 300, y: 700 }, makeRng(1), level);
-  assert.deepEqual(fx.graves, [{ x: 300, y: 700 }]);
+  assert.deepEqual(fx.graves, [{ x: 300, y: 700, unit: 2 }]);
   assert.ok(fx.particles.some((p) => p.kind === 'spark'));
 });
 

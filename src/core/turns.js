@@ -31,17 +31,20 @@ export function beginTurn(world, teamId, rng) {
   while (!team.units[idx].alive);
   team.last = idx;
   world.wind = (rng() * 2 - 1) * world.level.windMax;
-  const keep = team.weapon || 'bazooka';
-  Object.assign(world.turn, newTurnState(), { team: teamId, unit: idx, weapon: keep });
-  world.turn.shotsLeft = weaponById(keep).shots;
+  Object.assign(world.turn, newTurnState(), { team: teamId, unit: idx });
+  setWeapon(world, team.weapon || 'bazooka');
   world.events.push({ type: 'turn', team: teamId, unit: idx, wind: world.wind });
 }
 
-function chooseWeapon(turn, pick) {
+// Arm the active soldier with weapon `id`, with its shots for the turn.
+export function setWeapon(world, id) {
+  world.turn.weapon = id;
+  world.turn.shotsLeft = weaponById(id).shots;
+}
+
+function chooseWeapon(world, pick) {
   const w = typeof pick === 'number' ? WEAPONS[pick] : weaponById(pick);
-  if (!w || turn.shotsFired > 0) return;
-  turn.weapon = w.id;
-  turn.shotsLeft = w.shots;
+  if (w && world.turn.shotsFired === 0) setWeapon(world, w.id);
 }
 
 function fire(world, u, intents) {
@@ -65,7 +68,7 @@ export function applyIntents(world, intents, dt) {
   if (!u.alive || turn.phase === 'over' || turn.phase === 'settling') return { dir: 0, jump: false };
   const move = { dir: (intents.right ? 1 : 0) - (intents.left ? 1 : 0), jump: !!intents.jump };
   if (turn.phase !== 'aim') return move; // retreating: walk and jump only
-  if (intents.weapon !== undefined && intents.weapon !== null) chooseWeapon(turn, intents.weapon);
+  if (intents.weapon !== undefined && intents.weapon !== null) chooseWeapon(world, intents.weapon);
   if (intents.cancel) { // the UI paused or lost focus mid-charge: drop the charge, never fire
     turn.charging = false;
     turn.power = 0;
@@ -89,9 +92,14 @@ function allAtRest(world) {
 function finishMatchOrTurn(world, rng) {
   const alive = world.teams.map((t) => t.units.some((u) => u.alive));
   if (alive[0] && alive[1]) return beginTurn(world, 1 - world.turn.team, rng);
+  endMatch(world, !alive[0] && !alive[1] ? 'draw' : alive[0] ? 0 : 1);
+}
+
+// The match is over: `winner` is a team id or 'draw'.
+export function endMatch(world, winner) {
   world.turn.phase = 'over';
-  world.winner = !alive[0] && !alive[1] ? 'draw' : alive[0] ? 0 : 1;
-  world.events.push({ type: 'win', winner: world.winner });
+  world.winner = winner;
+  world.events.push({ type: 'win', winner });
 }
 
 function settle(world) {

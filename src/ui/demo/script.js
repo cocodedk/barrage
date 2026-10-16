@@ -7,6 +7,7 @@
 //   check(world, events, state) -> true once the player has done it (events: this tick's)
 import { aiIntents, THINK_TIME } from '../../core/ai-intents.js';
 import { DEG } from '../../core/math.js';
+import { setWeapon } from '../../core/turns.js';
 import { hero, arrange, planShot, digPit, pitShove } from './scene.js';
 
 const STRONG_WIND = 150; // px/s^2: the HUD arrow turns red
@@ -82,14 +83,14 @@ export const STEPS = [
     id: 'fire', title: 'Charge and fire',
     watch: 'Hold {Space} to charge — the bar shows your power. Let go to fire.',
     try: 'Hold {Space}, then let go to fire the bazooka.',
-    setup: (world) => { world.turn.weapon = 'bazooka'; },
+    setup: (world) => setWeapon(world, 'bazooka'),
     show: shot((world) => planShot(world, 'bazooka')),
     check: (world, events) => fired(events, 'bazooka'),
   },
   {
     id: 'wind', title: 'Wind',
     watch: 'The arrow at the top is the wind. Rockets drift with it — grenades don’t.',
-    setup: (world) => { world.wind = STRONG_WIND; world.turn.weapon = 'bazooka'; },
+    setup: (world) => { world.wind = STRONG_WIND; setWeapon(world, 'bazooka'); },
     show: shot((world) => ({ weapon: 'bazooka', moveSteps: 0, facing: 1, x: hero(world).x, aim: 72 * DEG, power: 0.62 })),
   },
   {
@@ -101,10 +102,10 @@ export const STEPS = [
     id: 'weapons', title: 'Weapons',
     watch: 'Switch weapons with {Q} {E} or {1} – {6}.',
     try: 'Pick the grenade: press {2}.',
-    setup: (world) => { world.turn.weapon = 'bazooka'; },
+    setup: (world) => setWeapon(world, 'bazooka'),
     show: keys(3.2, [[0.5, 0.85, { weapon: 1, press: 'E' }], [1.3, 1.65, { weapon: 2, press: 'E' }],
       [2.1, 2.45, { weapon: 1, press: 'Q' }]]),
-    ready: (world) => { world.turn.weapon = 'bazooka'; },
+    ready: (world) => setWeapon(world, 'bazooka'),
     check: (world) => world.turn.weapon === 'grenade',
   },
   {
@@ -112,7 +113,7 @@ export const STEPS = [
     watch: 'Grenades bounce, ignore the wind and go off after 3 seconds.',
     try: 'Throw the grenade: hold {Space}, let go.',
     show: shot((world) => planShot(world, 'grenade'), '2'),
-    ready: (world) => { world.turn.weapon = 'grenade'; },
+    ready: (world) => setWeapon(world, 'grenade'),
     check: (world, events) => fired(events, 'grenade'),
   },
   {
@@ -120,13 +121,13 @@ export const STEPS = [
     watch: 'Press {4}, move the marker with {←} {→} or the mouse, then {Space}.',
     try: 'Call in an airstrike: aim the marker, press {Space}.',
     show: airstrike,
-    ready: (world) => { world.turn.weapon = 'airstrike'; },
+    ready: (world) => setWeapon(world, 'airstrike'),
     check: (world, events) => fired(events, 'airstrike'),
   },
   {
     id: 'hazards', title: 'Watch your step',
     watch: 'Long falls hurt, and water is deadly — one splash and you’re out.',
-    setup: (world) => { world.turn.weapon = 'bazooka'; digPit(world); },
+    setup: (world) => { setWeapon(world, 'bazooka'); digPit(world); },
     show: shot((world) => planShot(world, 'bazooka', pitShove(world))),
   },
   {

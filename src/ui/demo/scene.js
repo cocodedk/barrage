@@ -1,7 +1,7 @@
 // The demo's stagehands: where everyone stands, keeping the turn on the player between steps,
 // and planning the scripted shots. UI layer only: it places soldiers and resets the turn the way
 // a director sets a scene, but every shot, blast and fall still runs through the real core.
-import { TURN_TIME, newTurnState } from '../../core/turns.js';
+import { TURN_TIME, newTurnState, setWeapon } from '../../core/turns.js';
 import { weaponById } from '../../core/weapons.js';
 import { unitAtRest } from '../../core/units.js';
 import { bodyCentre } from '../../core/explode.js';
@@ -23,11 +23,9 @@ export function place(world, u, x) {
   Object.assign(u, { x, y, vx: 0, vy: 0, onGround: true, peakY: y });
 }
 
-const GRAVE_NEAR = { x: 30, y: 80 }; // a grave this close to where a soldier lies is his
-
 // Home, at full health. `fx` (optional): a fallen soldier's grave goes when he gets up again.
 function revive(world, u, fx) {
-  if (!u.alive && fx) fx.graves = fx.graves.filter((g) => Math.abs(g.x - u.x) > GRAVE_NEAR.x || Math.abs(g.y - u.y) > GRAVE_NEAR.y);
+  if (!u.alive && fx) fx.graves = fx.graves.filter((g) => g.unit !== u.id);
   place(world, u, HOME[u.team][world.teams[u.team].units.indexOf(u)]);
   Object.assign(u, { hp: 100, alive: true });
 }
@@ -43,7 +41,7 @@ export function arrange(world) {
   for (const team of world.teams) for (const u of team.units) revive(world, u);
   for (const team of world.teams) for (const u of team.units) u.facing = team.id ? -1 : 1;
   hero(world).aim = 0.5;
-  world.turn.weapon = 'bazooka';
+  setWeapon(world, 'bazooka');
 }
 
 // Between steps: no shells in the air, calm wind, a fresh turn, every soldier at full health

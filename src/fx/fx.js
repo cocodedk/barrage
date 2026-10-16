@@ -3,7 +3,7 @@
 //   rings     shockwaves   { x, y, r, maxR, life, max, color }
 //   flashes   glow flashes { x, y, r, life, max }
 //   floaters  floating text { x, y, vy, text, color, life, max }
-//   graves    gravestones { x, y } (permanent)
+//   graves    gravestones { x, y, unit } (permanent)
 //   shake     screen-shake amplitude in px; shakeX/shakeY the offset to apply this frame
 //   timeScale 1, or SLOWMO_SCALE during slow motion: the main loop multiplies logic dt by it
 // stepFx takes real frame time. Particles and rings follow timeScale so slow motion shows.

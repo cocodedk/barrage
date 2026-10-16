@@ -65,7 +65,7 @@ function explosion(fx, ev, rng, level) {
 function death(fx, ev, rng, level) {
   if (ev.decisive) startSlowMo(fx); // the kill that decides the match, while it still flies
   const drowned = level?.liquid && ev.y >= level.liquid.y - GRAVE_LIQUID_MARGIN;
-  if (!drowned) fx.graves.push({ x: ev.x, y: ev.y });
+  if (!drowned) fx.graves.push({ x: ev.x, y: ev.y, unit: ev.unit });
   for (let i = 0; i < 24; i++) spark(fx, rng, ev.x, ev.y - 10, 260);
   for (let i = 0; i < 6; i++) {
     addParticle(fx, {

@@ -2,6 +2,7 @@
 // Logic runs in 1/60 s ticks from an accumulator; each tick's dt is scaled by fx.timeScale
 // (slow motion). Events drain every tick into fx, audio and the terrain canvas.
 import { createWorld, stepWorld } from '../core/world.js';
+import { endMatch } from '../core/turns.js';
 import { aiPlan, aiIntents } from '../core/ai.js';
 import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
@@ -9,7 +10,7 @@ import { applyEvent } from '../fx/react.js';
 import { createCamera, stepCamera } from '../fx/camera.js';
 import { createView, drawFrame, replayTerrain } from './view.js';
 import { play, soundForEvent } from './audio.js';
-import { createControls, humanIntents } from './controls.js';
+import { createControls, humanIntents, resetControls } from './controls.js';
 import { endTick } from './input.js';
 import { unlockLevel } from './storage.js';
 
@@ -20,30 +21,33 @@ const ATTRACT_SKILL = 0.75;
 // opts.attract: AI vs AI with no HUD and no sound (the title screen's backdrop).
 // m.pilot (set by the demo) supplies every tick's intents in place of the AI or the player.
 export function createMatch(canvas, level, mode, seed, opts = {}) {
-  const rng = makeRng(seed);
-  const world = createWorld(level, mode, rng);
-  if (opts.attract) for (const t of world.teams) t.ai = { skill: ATTRACT_SKILL };
-  const view = createView(canvas, level, world, !!opts.attract);
-  view.showHud = !opts.attract;
   const m = {
-    level, mode, seed, attract: !!opts.attract, world, rng, view,
+    level, mode, seed, attract: !!opts.attract, rng: makeRng(seed),
     fxRng: makeRng(seed ^ 0x9e3779b9), // effects draw from their own stream
-    fx: createFx(), cam: createCamera(), controls: createControls(),
-    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, overTime: 0, replays: 0,
+    controls: createControls(), pilot: null, replays: 0,
   };
+  freshRun(m, m.rng);
+  m.view = createView(canvas, level, m.world, m.attract);
+  m.view.showHud = !m.attract;
   drain(m); // createWorld already announced the first turn
   return m;
+}
+
+// A new battle on the match's level: world (the computer on both sides of an attract match),
+// effects, camera and the AI's plan, all fresh.
+function freshRun(m, worldRng) {
+  m.world = createWorld(m.level, m.mode, worldRng);
+  if (m.attract) for (const t of m.world.teams) t.ai = { skill: ATTRACT_SKILL };
+  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, overTime: 0 });
 }
 
 // The title battle is over: fight it again on the same battlefield. The same seed grows the
 // same ground, so the view restores its kept bake rather than baking again; a fresh rng makes
 // it a new battle.
 export function replayAttract(m) {
-  m.world = createWorld(m.level, m.mode, makeRng(m.seed));
-  for (const t of m.world.teams) t.ai = { skill: ATTRACT_SKILL };
+  freshRun(m, makeRng(m.seed));
   m.rng = makeRng(m.seed + ++m.replays);
   replayTerrain(m.view, m.world);
-  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, overTime: 0 });
   drain(m);
 }
 
@@ -54,7 +58,7 @@ function drain(m) {
     if (ev.type === 'crater') m.view.onCrater(ev.x, ev.y, ev.r);
     if (ev.type === 'turn') {
       m.ai.plan = null;
-      m.controls.markerX = null; // the next airstrike marker starts at the new soldier
+      resetControls(m.controls); // the next airstrike marker starts at the new soldier
     }
     if (m.attract) continue;
     if (ev.type === 'win' && m.mode === 'campaign' && ev.winner === 0) unlockLevel(m.level.id + 1); // saved now, not when the card shows
@@ -82,13 +86,10 @@ function tick(m, input, dt) {
   let intents = {};
   if (world.winner == null) {
     if (m.pilot) intents = m.pilot.intents(m, input, dt); // the demo: its script, or the player
-    else if (world.teams[world.turn.team].ai) {
-      m.view.cursor = null;
-      intents = aiTick(m, dt);
-    } else if (input) {
-      intents = humanIntents(m.controls, input, world, m.view, m.cam, dt);
-    }
-  } else m.view.cursor = null;
+    else if (world.teams[world.turn.team].ai) intents = aiTick(m, dt);
+    else if (input) intents = humanIntents(m.controls, input, world, m.view, m.cam, dt);
+  }
+  m.view.cursor = intents.marker ?? null; // the airstrike target, while one is being aimed
   if (input) endTick(input);
   stepWorld(world, dt, intents, m.rng);
   m.pilot?.after(m, dt); // sees this tick's events before they drain
@@ -124,8 +125,6 @@ export function forceWin(m, team) {
     u.alive = false;
   }
   world.projectiles.length = 0;
-  world.turn.phase = 'over';
-  world.winner = team;
-  world.events.push({ type: 'win', winner: team });
+  endMatch(world, team);
   drain(m);
 }

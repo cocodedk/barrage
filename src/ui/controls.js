@@ -1,5 +1,5 @@
 // The human player's intents for one logic tick, from keys and mouse (same keys for both
-// players in hot-seat versus). Also keeps the airstrike target in view.cursor for the renderer.
+// players in hot-seat versus). An airstrike's target comes back as `marker` for the renderer.
 import { WEAPONS, weaponById } from '../core/weapons.js';
 import { activeUnit } from '../core/turns.js';
 import { AIM_LIMIT } from '../core/units.js';
@@ -17,6 +17,12 @@ const clampX = (x) => clamp(x, 20, W - 20); // the marker stays clear of the wor
 
 // armed: a fire press began during this aim phase (so a held key never fires into a new turn).
 export const createControls = () => ({ armed: false, markerX: null });
+
+// A new turn or a scripted stretch: no armed press, and the next marker starts at the soldier.
+export function resetControls(c) {
+  c.armed = false;
+  c.markerX = null;
+}
 
 // Client (CSS px) -> world coordinates, through the view's letterbox fit and the camera.
 function toWorld(view, cam, clientX, clientY) {
@@ -67,9 +73,8 @@ export function humanIntents(c, input, world, view, cam, dt) {
     if (m.moved && at) c.markerX = clampX(at.x);
     c.markerX = clampX(c.markerX + ((held('right') ? 1 : 0) - (held('left') ? 1 : 0)) * MARKER_SPEED * dt);
     const y = at && Math.abs(at.x - c.markerX) < 1 ? at.y : world.terrain.surfaceY(Math.round(c.markerX));
-    view.cursor = { x: c.markerX, y: clamp(y, 0, H) };
+    out.marker = { x: c.markerX, y: clamp(y, 0, H) };
   } else {
-    view.cursor = null;
     c.markerX = null;
     out.left = held('left');
     out.right = held('right');

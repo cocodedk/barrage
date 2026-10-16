@@ -3,7 +3,7 @@
 // Watch-only steps go from 'show' straight to the next one; the last step is 'final' and stays.
 // pilotFor() plugs a runner into a match: game.js asks it for each tick's intents and calls
 // after() once the world has stepped, with that tick's events still in world.events.
-import { humanIntents } from '../controls.js';
+import { humanIntents, resetControls } from '../controls.js';
 import { tidy, calm, holdTurn } from './scene.js';
 
 const TRY_BEAT = 0.6; // s of calm after a show before the player's turn
@@ -66,10 +66,9 @@ export function pilotFor(r, player = (m, input, dt) => humanIntents(m.controls, 
   return {
     runner: r,
     intents(m, input, dt) {
-      if (r.phase !== 'try') m.controls.armed = false; // a Space held into the next try needs a fresh press
+      if (r.phase !== 'try') resetControls(m.controls); // a Space held into the next try needs a fresh press
       const out = runnerIntents(r, m.world, dt, () => (input ? player(m, input, dt) : {}));
-      if (r.phase !== 'try') m.view.cursor = out.marker != null ? markerAt(m.world, out.marker) : null;
-      return out;
+      return r.phase !== 'try' && out.marker != null ? { ...out, marker: markerAt(m.world, out.marker) } : out;
     },
     after: (m, dt) => afterTick(r, m.world, m.world.events, dt),
   };

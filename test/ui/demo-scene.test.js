@@ -46,8 +46,8 @@ test('holdTurn puts a fallen hero back on his feet and takes away his grave', ()
   arrange(w);
   const u = hero(w);
   Object.assign(u, { alive: false, hp: 0 });
-  fx.graves.push({ x: u.x, y: u.y }, { x: 1500, y: 700 });
+  fx.graves.push({ x: u.x, y: u.y, unit: u.id }, { x: 1500, y: 700, unit: 4 });
   holdTurn(w, false, fx);
   assert.deepEqual([u.alive, u.hp, u.x], [true, 100, HOME[0][0]]);
-  assert.deepEqual(fx.graves, [{ x: 1500, y: 700 }]); // someone else's grave stays
+  assert.deepEqual(fx.graves, [{ x: 1500, y: 700, unit: 4 }]); // someone else's grave stays
 });
