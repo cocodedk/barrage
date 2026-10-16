@@ -16,10 +16,8 @@ export function hurt(world, unit, amount) {
 }
 
 function push(unit, dx, dy, d, strength) {
-  const len = d || 1;
-  let nx = d ? dx / len : 0;
-  let ny = d ? dy / len : -1;
-  ny -= LIFT;
+  let nx = d ? dx / d : 0;
+  let ny = (d ? dy / d : -1) - LIFT;
   const norm = Math.hypot(nx, ny);
   nx /= norm;
   ny /= norm;

@@ -1,8 +1,10 @@
 // Saved progress: the highest unlocked campaign level, the mute switch and whether the demo was seen. Every localStorage
 // touch is wrapped: private windows, kiosks and blocked storage just play without saving.
 import { LEVELS } from '../core/levels.js';
+import { clamp } from '../core/math.js';
 
 const KEY = 'barrage.v1';
+const TOP = LEVELS.length + 1; // one past the last level: the campaign is beaten
 const DEFAULTS = { unlocked: 1, muted: false };
 let memory = { ...DEFAULTS }; // the truth when localStorage is unavailable
 
@@ -28,11 +30,11 @@ function save(patch) {
 // 1..LEVELS.length + 1 (one past the last means the whole campaign is beaten).
 export function unlockedLevel() {
   const n = Math.floor(Number(load().unlocked));
-  return Number.isFinite(n) ? Math.max(1, Math.min(LEVELS.length + 1, n)) : 1;
+  return Number.isFinite(n) ? clamp(n, 1, TOP) : 1;
 }
 
 export function unlockLevel(n) {
-  if (n > unlockedLevel()) save({ unlocked: Math.min(LEVELS.length + 1, n) });
+  if (n > unlockedLevel()) save({ unlocked: Math.min(TOP, n) });
 }
 
 export const isMuted = () => !!load().muted;

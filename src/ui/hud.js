@@ -3,6 +3,7 @@
 import { W, H, INK, rgba, shade, roundRect } from './sprites.js';
 import { WEAPONS, weaponById } from '../core/weapons.js';
 import { MAX_HP } from '../core/units.js';
+import { clamp } from '../core/math.js';
 import { drawIcon } from './hud-icons.js';
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -89,7 +90,7 @@ function wind(ctx, world) {
   const x = W / 2 - 160;
   panel(ctx, x, 124, 320, 48, undefined, 14);
   text(ctx, 'WIND', x + 18, 149, 16, 'rgba(255,255,255,0.7)', 'left', 800);
-  const k = Math.max(-1, Math.min(1, world.wind / WIND_FULL));
+  const k = clamp(world.wind / WIND_FULL, -1, 1);
   const cx = x + 200;
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.fillRect(cx - 100, 147, 200, 3);

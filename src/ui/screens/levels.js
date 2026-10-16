@@ -15,15 +15,10 @@ const COPY = {
 function card(level, mode, start) {
   const open = isOpen(level.id, mode);
   const beaten = level.id < unlockedLevel();
-  const c = h('button', `level-card${open ? '' : ' locked'}`);
-  c.type = 'button';
-  c.style.setProperty('--edge', level.edge);
   const art = h('div', 'level-art', levelThumb(level));
   if (!open) art.append(lockIcon());
   if (beaten && mode === 'campaign') art.append(h('span', 'level-done', '✓'));
-  c.append(art, h('div', 'level-meta', h('span', 'level-num', String(level.id)), h('span', 'level-name', level.name)));
-  c.addEventListener('pointerenter', () => c !== document.activeElement && focusItem(c));
-  c.addEventListener('click', () => {
+  const c = button(art, () => {
     if (open) {
       play('select');
       start(level);
@@ -33,7 +28,9 @@ function card(level, mode, start) {
     c.classList.remove('shake');
     void c.offsetWidth; // restart the shake animation
     c.classList.add('shake');
-  });
+  }, `level-card${open ? '' : ' locked'}`);
+  c.style.setProperty('--edge', level.edge);
+  c.append(h('div', 'level-meta', h('span', 'level-num', String(level.id)), h('span', 'level-name', level.name)));
   return c;
 }
 

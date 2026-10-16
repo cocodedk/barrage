@@ -6,7 +6,6 @@ import { W, H, rgba, shade, hash, glow, soft, star, wrap } from './sprites.js';
 import { SKY } from './flourish-sky.js';
 import { skyHaze } from './sky-paint.js';
 
-
 function rays(ctx, v, t) {
   const warm = v.level.id === 3;
   const ox = warm ? 420 : 760;

@@ -3,7 +3,7 @@
 // edge and liquid. Cheap enough to draw all fifteen at once; cached per level.
 import { generateTerrain } from '../../core/terrain-gen.js';
 import { makeRng } from '../../core/rng.js';
-import { W, rgb } from '../sprites.js';
+import { W, rgb, makeCanvas } from '../sprites.js';
 
 const TW = 320;
 const TH = 180;
@@ -51,9 +51,7 @@ function ground(g, level) {
 
 export function levelThumb(level) {
   if (!cache.has(level.id)) {
-    const c = document.createElement('canvas');
-    c.width = TW;
-    c.height = TH;
+    const c = makeCanvas(TW, TH);
     const g = c.getContext('2d', { willReadFrequently: true });
     const sky = g.createLinearGradient(0, 0, 0, TH);
     for (const [stop, color] of level.sky) sky.addColorStop(stop, color);

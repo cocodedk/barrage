@@ -1,6 +1,7 @@
 // Shared drawing helpers: offscreen canvases, colour maths, hashing and cached sprites.
 // Glow is never shadowBlur: it is a cached radial-gradient sprite drawn with 'lighter'.
 import { WORLD_W, WORLD_H } from '../core/terrain-gen.js';
+import { clamp } from '../core/math.js';
 
 export const W = WORLD_W;
 export const H = WORLD_H;
@@ -37,7 +38,7 @@ export function rgba(hex, a) {
   return `rgba(${r},${g},${b},${a})`;
 }
 
-const hex2 = (v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
+const hex2 = (v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0');
 
 // Blend two colours, t 0..1.
 export function mix(a, b, t) {

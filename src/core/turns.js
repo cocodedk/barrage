@@ -69,7 +69,7 @@ export function applyIntents(world, intents, dt) {
   if (!u.alive || turn.phase === 'over' || turn.phase === 'settling') return { dir: 0, jump: false };
   const move = { dir: (intents.right ? 1 : 0) - (intents.left ? 1 : 0), jump: !!intents.jump };
   if (turn.phase !== 'aim') return move; // retreating: walk and jump only
-  if (intents.weapon !== undefined && intents.weapon !== null) chooseWeapon(world, intents.weapon);
+  if (intents.weapon != null) chooseWeapon(world, intents.weapon);
   if (intents.cancel) { // the UI paused or lost focus mid-charge: drop the charge, never fire
     turn.charging = false;
     turn.power = 0;
@@ -116,15 +116,12 @@ export function stepTurn(world, dt, rng) {
   if (phase === 'over') return;
   const wiped = world.teams.some((t) => !t.units.some((u) => u.alive));
   if (phase !== 'settling' && (wiped || !activeUnit(world).alive)) return settle(world);
-  if (phase === 'aim') {
-    turn.timeLeft -= dt;
-    if (turn.timeLeft <= 0) settle(world); // out of time, even mid-charge: no shot
-  } else if (phase === 'flying' || phase === 'retreat') {
-    turn.timeLeft -= dt;
-    if (turn.timeLeft <= 0) settle(world);
-    else turn.phase = world.projectiles.some(inFlight) ? 'flying' : 'retreat';
-  } else {
+  if (phase === 'settling') {
     turn.settled += dt;
     if (worldAtRest(world) || turn.settled >= SETTLE_CAP) finishMatchOrTurn(world, rng);
+    return;
   }
+  turn.timeLeft -= dt; // aim, flying or retreat
+  if (turn.timeLeft <= 0) settle(world); // out of time, even mid-charge: no shot
+  else if (phase !== 'aim') turn.phase = world.projectiles.some(inFlight) ? 'flying' : 'retreat';
 }

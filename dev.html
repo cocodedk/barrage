@@ -26,6 +26,7 @@
 import { LEVELS } from './src/core/levels.js';
 import { createWorld, stepWorld } from './src/core/world.js';
 import { makeRng } from './src/core/rng.js';
+import { clamp } from './src/core/math.js';
 import { explode } from './src/core/explode.js';
 import { weaponById, BOMBLET, makeProjectile, inFlight } from './src/core/weapons.js';
 import { setWeapon } from './src/core/turns.js';
@@ -124,7 +125,7 @@ function grid() {
 
 const which = q.get('level') || '1';
 if (which === 'all') grid();
-else single(LEVELS[Math.max(0, Math.min(LEVELS.length - 1, Number(which) - 1))]);
+else single(LEVELS[clamp(Number(which) - 1, 0, LEVELS.length - 1)]);
 </script>
 </body>
 </html>

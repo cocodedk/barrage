@@ -9,6 +9,8 @@ let noiseBuf = null;
 let muted = isMuted();
 const last = {}; // sound name -> ctx time, to thin out bursts (bounce storms, cluster blasts)
 const GAP = { bounce: 0.06, land: 0.08, explosion: 0.03, menu: 0.03 };
+const FIRE_SOUND = { shotgun: 'shot', dynamite: 'drop', airstrike: 'drop' }; // the rest: 'fire'
+const gainFor = (off) => (off ? 0 : 0.7);
 
 // Call from a keydown / pointerdown handler.
 export function unlockAudio() {
@@ -18,7 +20,7 @@ export function unlockAudio() {
       if (!AC) return;
       ctx = new AC();
       master = ctx.createGain();
-      master.gain.value = muted ? 0 : 0.7;
+      master.gain.value = gainFor(muted);
       const comp = ctx.createDynamicsCompressor();
       master.connect(comp).connect(ctx.destination);
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
@@ -38,7 +40,7 @@ export function unlockAudio() {
 export function toggleMute() {
   muted = !muted;
   setMuted(muted);
-  if (master) master.gain.setTargetAtTime(muted ? 0 : 0.7, ctx.currentTime, 0.02);
+  if (master) master.gain.setTargetAtTime(gainFor(muted), ctx.currentTime, 0.02);
   return muted;
 }
 
@@ -58,7 +60,7 @@ export function play(name, opts = {}) {
 // The sounds a core event makes ('win' is left to the caller: fanfare or not depends on who won).
 export function soundForEvent(ev) {
   switch (ev.type) {
-    case 'fire': return play(ev.weapon === 'shotgun' ? 'shot' : ev.weapon === 'dynamite' || ev.weapon === 'airstrike' ? 'drop' : 'fire');
+    case 'fire': return play(FIRE_SOUND[ev.weapon] || 'fire');
     case 'explosion': return play('explosion', { r: ev.r });
     case 'bounce': return play('bounce');
     case 'splash': return play('splash');

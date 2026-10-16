@@ -9,6 +9,7 @@
 // backing store never exceeds 1:1 with the world (Pi 4 fill rate).
 import { W, H, makeCanvas, shade } from './sprites.js';
 import { skyTop } from './sky-paint.js';
+import { clamp } from '../core/math.js';
 import { lookFor } from './looks.js';
 import { buildSky } from './sky.js';
 import { buildLayers, drawLayers, horizonOf } from './parallax.js';
@@ -130,7 +131,7 @@ function backdrop(g, v, world, cam, fx, t) {
 }
 
 export function drawFrame(v, world, fx, cam, t = 0) {
-  const dt = v.lastT == null ? 0 : Math.min(0.1, Math.max(0, t - v.lastT));
+  const dt = v.lastT == null ? 0 : clamp(t - v.lastT, 0, 0.1);
   v.lastT = t;
   v.now = t;
   v.drift += (world.wind || 0) * dt * 0.9;

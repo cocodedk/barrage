@@ -2,7 +2,7 @@
 // index, the time t and `drift` (px of wind drift the view accumulates), so nothing is
 // simulated and nothing allocates per frame.
 import { W, H, hash, glow, soft, star, wrap } from './sprites.js';
-
+import { clamp } from '../core/math.js';
 
 const P = {}; // one scratch particle, refilled per index: no per-frame garbage
 function each(a, fn) {
@@ -60,7 +60,7 @@ const KINDS = {
     });
   },
   rain(ctx, a, t, drift, wind) {
-    const slant = Math.max(-0.7, Math.min(0.7, wind / 220)) + 0.08;
+    const slant = clamp(wind / 220, -0.7, 0.7) + 0.08;
     ctx.lineWidth = a.size[0] > 14 ? 2 : 1.5;
     a.colors.forEach((c, ci) => {
       ctx.strokeStyle = c;

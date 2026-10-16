@@ -4,7 +4,6 @@ import { W, H, makeCanvas, rgba, shade, hash, soft, wrap, lighter, normal } from
 import { cloud, skyTop } from './sky-paint.js';
 import { bolt, flash, streaks } from './flourish-strikes.js';
 
-
 function clouds(ctx, v, t) {
   const top = skyTop(v.level);
   v.cache.clouds ??= [0, 1, 2, 3].map((i) => {

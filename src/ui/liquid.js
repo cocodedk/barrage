@@ -1,6 +1,6 @@
 // The death liquid: a translucent body under an animated sine-shimmer surface. Lava (and
 // neon water) glows additively and bubbles.
-import { W, H, rgba, mix, shade, hash, glow } from './sprites.js';
+import { W, H, rgba, mix, shade, hash, glow, wrap } from './sprites.js';
 
 const STEP = 16;
 const bodies = new WeakMap(); // level -> its body gradient, built on the first frame
@@ -13,7 +13,7 @@ function bubbles(ctx, y, t, color) {
   for (let i = 0; i < 16; i++) {
     const period = 1.6 + hash(i + 7) * 2.2;
     const ph = (t / period + hash(i)) % 1;
-    const x = ((hash(i + 3) * W + Math.floor(t / period + hash(i)) * 397) % W + W) % W;
+    const x = wrap(hash(i + 3) * W + Math.floor(t / period + hash(i)) * 397, 0, W);
     const r = 2 + ph * (6 + hash(i + 9) * 8);
     ctx.globalAlpha = ph < 0.85 ? 0.9 : (1 - ph) * 6;
     ctx.beginPath();
@@ -24,8 +24,7 @@ function bubbles(ctx, y, t, color) {
 }
 
 export function drawLiquid(ctx, level, look, t) {
-  const { kind, color } = level.liquid;
-  const y = level.liquid.y;
+  const { kind, color, y } = level.liquid;
   const hot = kind === 'lava';
   const glowy = hot || look.glow > 0.6;
   // body
@@ -66,7 +65,7 @@ export function drawLiquid(ctx, level, look, t) {
   // glints riding the surface
   const g = glow(shade(color, 0.8));
   for (let i = 0; i < 22; i++) {
-    const x = ((hash(i + 40) * W + t * (hash(i + 41) - 0.5) * 60) % W + W) % W;
+    const x = wrap(hash(i + 40) * W + t * (hash(i + 41) - 0.5) * 60, 0, W);
     ctx.globalAlpha = Math.max(0, Math.sin(t * (1.5 + hash(i + 42) * 2) + i * 2.1)) * 0.8;
     ctx.drawImage(g, x - 10, surface(x, y, t) - 4, 20, 8);
   }

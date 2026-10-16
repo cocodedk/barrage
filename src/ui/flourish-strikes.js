@@ -3,7 +3,6 @@
 import { W, H, rgba, hash, glow, lighter, normal } from './sprites.js';
 import { makeRng } from '../core/rng.js';
 
-
 // Lightning: in each 3.3 s slot, half the slots strike once. Returns brightness 0..1.
 export function lightning(t) {
   const slot = Math.floor(t / 3.3);

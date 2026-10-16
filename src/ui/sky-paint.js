@@ -1,5 +1,6 @@
 // Painting helpers shared by the sky, its bodies and the animated flourishes.
 import { W, makeCanvas, mix, shade, hash, noise2, glow, soft } from './sprites.js';
+import { clamp } from '../core/math.js';
 
 // The level's sky colour at the very top, and at the horizon.
 export const skyTop = (level) => level.sky[0][1];
@@ -25,24 +26,13 @@ export function stars(g, n, seed, maxY, bright = 1) {
     g.fillStyle = `rgba(255,255,255,${a})`;
     const s = m > 0.93 ? 2 : m > 0.6 ? 1.5 : 1;
     g.fillRect(x, y, s, s);
-    if (m > 0.96) {
-      g.globalCompositeOperation = 'lighter';
-      g.globalAlpha = 0.5 * bright;
-      g.drawImage(glow('#cfe0ff'), x - 8, y - 8, 16, 16);
-      g.globalAlpha = 1;
-      g.globalCompositeOperation = 'source-over';
-    }
+    if (m > 0.96) add(g, glow('#cfe0ff'), x, y, 8, 0.5 * bright);
   }
 }
 
 // A plain sun: wide additive halo, then a solid disc.
 export function sun(g, x, y, r, color, haloScale = 7, haloAlpha = 0.9) {
-  g.globalCompositeOperation = 'lighter';
-  g.globalAlpha = haloAlpha;
-  const R = r * haloScale;
-  g.drawImage(glow(color), x - R, y - R, R * 2, R * 2);
-  g.globalAlpha = 1;
-  g.globalCompositeOperation = 'source-over';
+  add(g, glow(color), x, y, r * haloScale, haloAlpha);
   g.fillStyle = shade(color, 0.55);
   g.beginPath();
   g.arc(x, y, r, 0, Math.PI * 2);
@@ -62,7 +52,6 @@ export function cloud(g, x, y, w, color, shadow, seed) {
     }
   }
 }
-
 
 export function add(g, sprite, x, y, r, a = 1) {
   g.globalCompositeOperation = 'lighter';
@@ -125,7 +114,7 @@ export function earth(g, x, y, r) {
       const cl = noise2(px * 0.6 + py * 0.9, py * 0.5, 14, 9);
       let col = land > 0.56 ? (land > 0.66 ? [196, 170, 110] : [70, 150, 70]) : [24, 86, 190];
       if (cl > 0.62) col = [240, 246, 255];
-      const lit = Math.max(0.08, Math.min(1, 0.55 + nx * 0.7 - ny * 0.35)) * (1 - rr * 0.25);
+      const lit = clamp(0.55 + nx * 0.7 - ny * 0.35, 0.08, 1) * (1 - rr * 0.25);
       const i = (py * d + px) * 4;
       img.data[i] = col[0] * lit;
       img.data[i + 1] = col[1] * lit;
