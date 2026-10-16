@@ -1,7 +1,7 @@
 // Shells in flight: a glowing trail from a per-projectile history ring (keyed by object
 // identity in a WeakMap, so it vanishes with the shell) and a sprite per kind. Trail points
 // age by time, so a shell that comes to rest loses its tail.
-import { rgba, hash, glow } from './sprites.js';
+import { INK, rgba, hash, glow } from './sprites.js';
 
 const TRAIL = 22;
 const TRAIL_LIFE = 0.45; // s a trail point stays visible
@@ -9,7 +9,6 @@ const COLORS = {
   bazooka: '#ffb347', missile: '#ff6a3a', grenade: '#a8ff7a', cluster: '#ff8a5a',
   bomblet: '#ffd24a', dynamite: '#ff4a3a',
 };
-const INK = '#141821';
 
 function remember(v, p, t) {
   let h = v.trails.get(p);

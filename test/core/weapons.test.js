@@ -1,9 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { WEAPONS, weaponById } from '../../src/core/weapons.js';
-import { flatWorld, run, shoot, eventsOf, DT, GROUND } from './helpers.js';
+import { flatWorld, run, shoot, eventsOf, DT, GROUND, hero } from './helpers.js';
 
-const me = (w) => w.teams[0].units[0];
 // Move the shooter's squad mates out of his line of fire.
 const clearLine = (w) => w.teams[0].units.slice(1).forEach((u, i) => (u.x = 100 + i * 50));
 
@@ -25,7 +24,7 @@ test('WEAPONS carries the spec numbers', () => {
 
 test('bazooka: speed is power * 900 along the aim, explodes on contact (r 40)', () => {
   const w = flatWorld();
-  me(w).aim = 0;
+  hero(w).aim = 0;
   shoot(w, 'bazooka', 0.5);
   const fires = eventsOf(w, 'fire');
   assert.equal(fires.length, 1);
@@ -42,15 +41,15 @@ test('bazooka: speed is power * 900 along the aim, explodes on contact (r 40)', 
 
 test('bazooka fired straight up falls back onto its owner', () => {
   const w = flatWorld();
-  me(w).aim = Math.PI / 2;
+  hero(w).aim = Math.PI / 2;
   shoot(w, 'bazooka', 0.5);
   run(w, 8);
-  assert.ok(me(w).hp < 100);
+  assert.ok(hero(w).hp < 100);
 });
 
 test('grenade bounces, then explodes at the end of its 3 s fuse', () => {
   const w = flatWorld();
-  me(w).aim = 0.8;
+  hero(w).aim = 0.8;
   shoot(w, 'grenade', 0.6);
   const t0 = w.events.length;
   let t = 0;
@@ -68,7 +67,7 @@ test('grenade bounces, then explodes at the end of its 3 s fuse', () => {
 test('grenade is not blown by the wind', () => {
   const w = flatWorld();
   w.wind = 200;
-  me(w).aim = Math.PI / 2;
+  hero(w).aim = Math.PI / 2;
   shoot(w, 'grenade', 0.3);
   const x0 = w.projectiles[0].x;
   run(w, 0.5);
@@ -77,7 +76,7 @@ test('grenade is not blown by the wind', () => {
 
 test('cluster bomb bursts into 5 bomblets (r 20, dmg 20)', () => {
   const w = flatWorld();
-  me(w).aim = 0.8;
+  hero(w).aim = 0.8;
   shoot(w, 'cluster', 0.5);
   for (let i = 0; i < 400 && !w.projectiles.some((p) => p.kind === 'bomblet'); i++) run(w, DT);
   const bomblets = w.projectiles.filter((p) => p.kind === 'bomblet');
@@ -110,7 +109,7 @@ test('airstrike without a target does not fire', () => {
 
 test('shotgun hits the first soldier on its ray, with a small crater', () => {
   const w = flatWorld();
-  me(w).aim = 0;
+  hero(w).aim = 0;
   clearLine(w);
   const [front, back] = w.teams[1].units;
   front.x = 600;
@@ -123,7 +122,7 @@ test('shotgun hits the first soldier on its ray, with a small crater', () => {
 
 test('shotgun stops at terrain before reaching a soldier behind it', () => {
   const w = flatWorld();
-  me(w).aim = 0;
+  hero(w).aim = 0;
   clearLine(w);
   for (let y = 700; y < GROUND; y++) for (let x = 500; x < 520; x++) w.terrain.mask[y * 1920 + x] = 1;
   w.teams[1].units[0].x = 700;
@@ -135,17 +134,17 @@ test('shotgun stops at terrain before reaching a soldier behind it', () => {
 
 test('shotgun range is 900 px', () => {
   const w = flatWorld();
-  me(w).aim = 0;
+  hero(w).aim = 0;
   clearLine(w);
   const u = w.teams[1].units[0];
-  u.x = me(w).x + 960;
+  u.x = hero(w).x + 960;
   shoot(w, 'shotgun', 0);
   assert.equal(u.hp, 100);
 });
 
 test('shotgun has 2 shots per turn; the turn moves on after the second', () => {
   const w = flatWorld();
-  me(w).aim = 0;
+  hero(w).aim = 0;
   clearLine(w);
   w.teams[1].units[0].x = 600;
   shoot(w, 'shotgun', 0);
@@ -159,7 +158,7 @@ test('shotgun has 2 shots per turn; the turn moves on after the second', () => {
 
 test('dynamite is dropped at his feet and goes off after 4 s (r 70)', () => {
   const w = flatWorld();
-  const u = me(w);
+  const u = hero(w);
   shoot(w, 'dynamite', 0);
   const p = w.projectiles[0];
   assert.equal(p.kind, 'dynamite');

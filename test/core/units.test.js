@@ -2,10 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { explode } from '../../src/core/explode.js';
 import { unitAtRest } from '../../src/core/units.js';
-import { flatWorld, run, eventsOf, GROUND } from './helpers.js';
-
-const hero = (w) => w.teams[0].units[0];
-const W = 1920;
+import { WORLD_W as W } from '../../src/core/terrain-gen.js';
+import { flatWorld, run, eventsOf, hero, GROUND } from './helpers.js';
 
 // A ramp of `rise` px per px from x0 to x1, standing on the flat ground.
 function slope(world, x0, x1, rise) {
@@ -145,14 +143,14 @@ test('touching liquid kills him with a splash, and he does not explode', () => {
 test('ice: he keeps sliding after the key is released; grippy ground stops him', () => {
   const ice = flatWorld({ friction: 0.1 });
   run(ice, 1, { right: true });
-  const x0 = ice.teams[0].units[0].x;
+  const x0 = hero(ice).x;
   run(ice, 1);
-  assert.ok(ice.teams[0].units[0].x - x0 > 20, `slid ${ice.teams[0].units[0].x - x0}`);
+  assert.ok(hero(ice).x - x0 > 20, `slid ${hero(ice).x - x0}`);
   const grip = flatWorld({ friction: 0.9 });
   run(grip, 1, { right: true });
-  const g0 = grip.teams[0].units[0].x;
+  const g0 = hero(grip).x;
   run(grip, 1);
-  assert.ok(grip.teams[0].units[0].x - g0 < 5);
+  assert.ok(hero(grip).x - g0 < 5);
 });
 
 test('the world edges stop him', () => {

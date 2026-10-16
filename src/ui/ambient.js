@@ -1,9 +1,8 @@
 // Per-level ambient particles. Stateless: every particle's position is a function of its
 // index, the time t and `drift` (px of wind drift the view accumulates), so nothing is
 // simulated and nothing allocates per frame.
-import { W, H, hash, glow, soft, star } from './sprites.js';
+import { W, H, hash, glow, soft, star, wrap } from './sprites.js';
 
-const wrap = (v, lo, hi) => lo + ((((v - lo) % (hi - lo)) + (hi - lo)) % (hi - lo));
 
 const P = {}; // one scratch particle, refilled per index: no per-frame garbage
 function each(a, fn) {

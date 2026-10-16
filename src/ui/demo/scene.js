@@ -6,13 +6,13 @@ import { weaponById } from '../../core/weapons.js';
 import { unitAtRest } from '../../core/units.js';
 import { bodyCentre } from '../../core/explode.js';
 import { simWorldFor, bestShot } from '../../core/ai-sim.js';
+import { DEG } from '../../core/math.js';
 
 export const DEMO_SEED = 11; // Green Meadow with this seed is gentle and rolling
 export const HOME = [[560, 200, 340], [1180, 1460, 1790]]; // x of each soldier, team by team
 // A well down to the water for the hazards step, away from where the earlier shows aim (the
 // nearest enemy, at 1180), so their craters never spoil its lip.
 const PIT = { x: 1600, r: 110, depth: 1070 }; // wide: a full-power knock still drops in
-const DEG = Math.PI / 180;
 
 export const hero = (world) => world.teams[0].units[0];
 export const pitSoldier = (world) => world.teams[1].units[1]; // the enemy on the well's lip

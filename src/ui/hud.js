@@ -1,6 +1,6 @@
 // Heads-up display in the logical 1920 x 1080 frame, sized to read from across a room:
 // team HP panels, turn timer, wind, weapon bar (keys 1-6), power meter, turn banner.
-import { W, rgba, mix, roundRect } from './sprites.js';
+import { W, H, INK, rgba, shade, roundRect } from './sprites.js';
 import { WEAPONS } from '../core/weapons.js';
 import { drawIcon } from './hud-icons.js';
 
@@ -43,7 +43,7 @@ function teamPanel(ctx, team, active, right) {
   const side = right ? 'right' : 'left';
   const edge = right ? x + w - 22 : x + 22;
   text(ctx, team.name, edge, 58, 28, '#ffffff', side, 900);
-  text(ctx, String(Math.ceil(hp)), right ? x + 22 : x + w - 22, 58, 28, mix(team.color, '#ffffff', 0.4), right ? 'left' : 'right', 900);
+  text(ctx, String(Math.ceil(hp)), right ? x + 22 : x + w - 22, 58, 28, shade(team.color, 0.4), right ? 'left' : 'right', 900);
   team.units.forEach((u, i) => {
     ctx.beginPath();
     const px = right ? x + w - 22 - ctx.measureText(team.name).width - 26 - i * 20 : x + 22 + ctx.measureText(team.name).width + 26 + i * 20;
@@ -61,7 +61,7 @@ function teamPanel(ctx, team, active, right) {
     roundRect(ctx, right ? bx + bw - fw : bx, 80, fw, 20, 10);
     ctx.fillStyle = fill(`hp ${team.color}`, () => {
       const gr = ctx.createLinearGradient(0, 80, 0, 100);
-      gr.addColorStop(0, mix(team.color, '#ffffff', 0.45));
+      gr.addColorStop(0, shade(team.color, 0.45));
       gr.addColorStop(1, team.color);
       return gr;
     });
@@ -116,7 +116,7 @@ function weaponBar(ctx, world, color) {
   const size = 86;
   const gap = 12;
   const x0 = W / 2 - (WEAPONS.length * size + (WEAPONS.length - 1) * gap) / 2;
-  const y = 1080 - 26 - size;
+  const y = H - 26 - size;
   WEAPONS.forEach((w, i) => {
     const sel = w.id === turn.weapon;
     const locked = !sel && turn.shotsFired > 0;
@@ -151,7 +151,7 @@ function weaponBar(ctx, world, color) {
     });
     roundRect(ctx, bx, y - 52, Math.max(12, bw * turn.power), 26, 9);
     ctx.fill();
-    text(ctx, `${Math.round(turn.power * 100)}%`, W / 2, y - 39, 20, '#141821', 'center', 900);
+    text(ctx, `${Math.round(turn.power * 100)}%`, W / 2, y - 39, 20, INK, 'center', 900);
   }
 }
 
@@ -171,7 +171,7 @@ function banner(ctx, world, hud, t) {
   ctx.fillStyle = team.color;
   ctx.fillRect(W / 2 - w / 2 + 24, y - 56, w - 48, 6);
   text(ctx, main, W / 2, y - 8, 50, '#ffffff', 'center', 900);
-  text(ctx, team.name.toUpperCase(), W / 2, y + 34, 20, mix(team.color, '#ffffff', 0.45), 'center', 800);
+  text(ctx, team.name.toUpperCase(), W / 2, y + 34, 20, shade(team.color, 0.45), 'center', 800);
   ctx.globalAlpha = 1;
 }
 

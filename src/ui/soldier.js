@@ -1,9 +1,8 @@
 // One soldier, drawn around his feet: boots, team-coloured body, face, helmet and the
 // selected weapon held along the aim. Also the gravestone a dead soldier leaves.
-import { shade, mix, roundRect } from './sprites.js';
+import { INK, shade, roundRect } from './sprites.js';
 
 const SKIN = '#f2c89a';
-const INK = '#141821';
 
 function weapon(ctx, kind) {
   ctx.lineWidth = 1.5;
@@ -60,7 +59,7 @@ function weapon(ctx, kind) {
 // s: { sx, sy, flinch 0..1, walking, walk phase }; held: weapon id or null.
 export function drawSoldier(ctx, u, color, s, held) {
   const f = u.facing;
-  const body = s.flinch ? mix(color, '#ffffff', s.flinch * 0.8) : color;
+  const body = s.flinch ? shade(color, s.flinch * 0.8) : color;
   const dark = shade(color, -0.45);
   ctx.save();
   ctx.translate(u.x, u.y);

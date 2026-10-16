@@ -1,15 +1,14 @@
 // Shot simulation for the computer opponent. Everything here runs stepProjectile on a cloned
 // projectile and a read-only view of the world: nothing is ever carved, damaged or pushed.
 import { stepProjectile } from './physics.js';
-import { makeProjectile, MAX_SPEED } from './weapons.js';
+import { makeProjectile, muzzle, MAX_SPEED } from './weapons.js';
 import { REACH } from './explode.js';
+import { DEG } from './math.js';
 
-export const MUZZLE = 18; // mirrors fireWeapon: px from the body centre to where a shell appears
 const MAX_SIM = 6; // s; a bouncer can return null for ever
 const SELF_WEIGHT = 1.5; // friendly fire hurts more than enemy damage helps
 const GRADIENT = 0.02; // tie-breaker that pulls a harmless shot toward the nearest enemy
 const REFINE_VALUE = -GRADIENT * 150; // a coarse shot that lands farther than this from every enemy is not worth refining
-const DEG = Math.PI / 180;
 
 // What stepProjectile needs, minus the shooter (his shells start clear of his body anyway).
 export function simWorldFor(world, shooter) {
@@ -34,10 +33,10 @@ export function flyShell(sw, w, mx, my, vx, vy, dt) {
 // Fire from feet (org.x, org.y) at `deg` above horizontal, facing -1|1, power 0..1.
 export function shotImpact(sw, w, org, facing, deg, power, dt) {
   const a = deg * DEG;
-  const dx = facing * Math.cos(a);
-  const dy = -Math.sin(a);
+  const d = { x: facing * Math.cos(a), y: -Math.sin(a) };
+  const m = muzzle(org, d);
   const v = power * MAX_SPEED;
-  return flyShell(sw, w, org.x + dx * MUZZLE, org.y - 10 + dy * MUZZLE, dx * v, dy * v, dt);
+  return flyShell(sw, w, m.x, m.y, d.x * v, d.y * v, dt);
 }
 
 // Net expected damage of an impact (enemy damage minus weighted own damage), plus a small pull

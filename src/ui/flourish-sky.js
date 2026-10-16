@@ -1,18 +1,15 @@
 // Animated sky flourishes, drawn behind the land in fixed screen space (the sky is far away).
 // Everything is a pure function of t; prebuilt sprites live in v.cache.
-import { W, H, makeCanvas, rgba, mix, hash, soft } from './sprites.js';
+import { W, H, makeCanvas, rgba, shade, hash, soft, wrap, lighter, normal } from './sprites.js';
 import { cloud } from './sky-paint.js';
 import { bolt, flash, streaks } from './flourish-strikes.js';
 
-const wrap = (v, lo, hi) => lo + ((((v - lo) % (hi - lo)) + (hi - lo)) % (hi - lo));
-const lighter = (ctx) => { ctx.globalCompositeOperation = 'lighter'; };
-const normal = (ctx) => { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; };
 
 function clouds(ctx, v, t) {
   const top = v.level.sky[0][1];
   v.cache.clouds ??= [0, 1, 2, 3].map((i) => {
     const c = makeCanvas(640, 360);
-    cloud(c.getContext('2d'), 320, 190, 300 + i * 20, mix(top, '#ffffff', 0.9), mix(top, '#ffffff', 0.6), 70 + i);
+    cloud(c.getContext('2d'), 320, 190, 300 + i * 20, shade(top, 0.9), shade(top, 0.6), 70 + i);
     return c;
   });
   v.cache.clouds.forEach((c, i) => {
@@ -24,7 +21,7 @@ function clouds(ctx, v, t) {
 }
 
 function birds(ctx, v, t) {
-  ctx.strokeStyle = rgba(mix(v.level.sky[0][1], '#000000', 0.65), 0.75);
+  ctx.strokeStyle = rgba(shade(v.level.sky[0][1], -0.65), 0.75);
   ctx.lineWidth = 2;
   ctx.beginPath();
   for (let i = 0; i < 7; i++) {

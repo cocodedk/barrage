@@ -1,12 +1,11 @@
 // Soldiers, their HP labels, gravestones, and the active soldier's marker, reticle and aim
 // line. Squash and flinch come from a small visual state per unit id, fed by what changed
 // since the last frame (landing, losing hp).
-import { rgba, mix, shade, glow, roundRect } from './sprites.js';
+import { INK_SOFT, rgba, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
+import { aimDir, MISSILES, MISSILE_GAP } from '../core/weapons.js';
 
 const RETICLE = 92;
-const DROP_GAP = 40; // px between airstrike missiles (core weapons.js MISSILE_GAP)
-const INK_SOFT = 'rgba(10,12,20,0.7)';
 const POWER = ['#5aff7a', '#ffe14a', '#ff4a3a'];
 
 function visual(v, u, dt) {
@@ -42,7 +41,7 @@ function label(ctx, u, color) {
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = rgba(color, 0.9);
   ctx.stroke();
-  ctx.fillStyle = mix(color, '#ffffff', 0.45);
+  ctx.fillStyle = shade(color, 0.45);
   ctx.fillText(text, u.x, y + 0.5);
 }
 
@@ -58,7 +57,7 @@ function marker(ctx, u, color, t) {
   ctx.lineTo(u.x + 10, y - 8);
   ctx.lineTo(u.x, y + 6);
   ctx.closePath();
-  ctx.fillStyle = mix(color, '#ffffff', 0.2);
+  ctx.fillStyle = shade(color, 0.2);
   ctx.fill();
   ctx.lineWidth = 2;
   ctx.strokeStyle = '#ffffff';
@@ -66,8 +65,7 @@ function marker(ctx, u, color, t) {
 }
 
 function aim(ctx, u, turn, t) {
-  const dx = u.facing * Math.cos(u.aim);
-  const dy = -Math.sin(u.aim);
+  const { x: dx, y: dy } = aimDir(u);
   const cx = u.x;
   const cy = u.y - 12;
   const charging = turn.charging;
@@ -83,7 +81,7 @@ function aim(ctx, u, turn, t) {
   const rx = cx + dx * RETICLE;
   const ry = cy + dy * RETICLE;
   const spin = t * 1.5;
-  for (const [w, c] of [[4.5, 'rgba(10,12,20,0.7)'], [2, '#ffffff']]) {
+  for (const [w, c] of [[4.5, INK_SOFT], [2, '#ffffff']]) {
     ctx.lineWidth = w;
     ctx.strokeStyle = c;
     ctx.beginPath();
@@ -103,7 +101,7 @@ function aim(ctx, u, turn, t) {
 function target(ctx, c, color, t) {
   ctx.setLineDash([12, 9]);
   ctx.lineDashOffset = -t * 40;
-  for (const [w, s] of [[5, 'rgba(10,12,20,0.45)'], [2.5, rgba(mix(color, '#ffffff', 0.3), 0.95)]]) {
+  for (const [w, s] of [[5, 'rgba(10,12,20,0.45)'], [2.5, rgba(shade(color, 0.3), 0.95)]]) {
     ctx.lineWidth = w;
     ctx.strokeStyle = s;
     ctx.beginPath();
@@ -112,11 +110,12 @@ function target(ctx, c, color, t) {
     ctx.stroke();
   }
   ctx.setLineDash([]);
-  for (let i = -2; i <= 2; i++) {
+  for (let i = 0; i < MISSILES; i++) {
+    const x = c.x + (i - (MISSILES - 1) / 2) * MISSILE_GAP;
     ctx.fillStyle = INK_SOFT;
-    ctx.fillRect(c.x + i * DROP_GAP - 4, c.y - 4, 8, 8);
-    ctx.fillStyle = mix(color, '#ffffff', 0.5);
-    ctx.fillRect(c.x + i * DROP_GAP - 2.5, c.y - 2.5, 5, 5);
+    ctx.fillRect(x - 4, c.y - 4, 8, 8);
+    ctx.fillStyle = shade(color, 0.5);
+    ctx.fillRect(x - 2.5, c.y - 2.5, 5, 5);
   }
   ctx.globalCompositeOperation = 'lighter';
   ctx.globalAlpha = 0.55 + 0.25 * Math.sin(t * 6);
@@ -124,7 +123,7 @@ function target(ctx, c, color, t) {
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
   const r = 18 + Math.sin(t * 6) * 2;
-  for (const [w, s] of [[5.5, INK_SOFT], [3, mix(color, '#ffffff', 0.3)]]) {
+  for (const [w, s] of [[5.5, INK_SOFT], [3, shade(color, 0.3)]]) {
     ctx.lineWidth = w;
     ctx.strokeStyle = s;
     ctx.beginPath();

@@ -3,16 +3,12 @@
 // edge and liquid. Cheap enough to draw all fifteen at once; cached per level.
 import { generateTerrain } from '../../core/terrain-gen.js';
 import { makeRng } from '../../core/rng.js';
+import { W, rgb } from '../sprites.js';
 
 const TW = 320;
 const TH = 180;
-const SCALE = 1920 / TW;
+const SCALE = W / TW;
 const cache = new Map();
-
-function rgb(hex) {
-  const n = parseInt(hex.slice(1, 7), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
 
 function ridges(g, level) {
   level.layers.forEach((layer, li) => {

@@ -1,10 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { explode, hurt, resolveDeaths } from '../../src/core/explode.js';
+import { explode, hurt, resolveDeaths, bodyCentre as centre } from '../../src/core/explode.js';
 import { flatWorld, eventsOf, run, DT, GROUND } from './helpers.js';
 
 const victim = (world) => world.teams[1].units[0];
-const centre = (u) => ({ x: u.x, y: u.y - 10 });
 
 test('damage is full at d=0 and half at d=r/2', () => {
   const world = flatWorld();

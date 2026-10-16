@@ -1,10 +1,8 @@
 // Sudden sky events on a deterministic timetable: lightning (bolt + screen flash),
 // shooting stars and meteors.
-import { W, H, rgba, hash, glow } from './sprites.js';
+import { W, H, rgba, hash, glow, lighter, normal } from './sprites.js';
 import { makeRng } from '../core/rng.js';
 
-const lighter = (ctx) => { ctx.globalCompositeOperation = 'lighter'; };
-const normal = (ctx) => { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; };
 
 // Lightning: in each 3.3 s slot, half the slots strike once. Returns brightness 0..1.
 export function lightning(t) {

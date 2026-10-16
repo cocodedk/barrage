@@ -1,13 +1,14 @@
 // Turn flow: aim -> (fire) -> flying/retreat -> settling -> next team; wind, rotation, winner.
 import { WEAPONS, weaponById, fireWeapon } from './weapons.js';
 import { unitAtRest, AIM_LIMIT } from './units.js';
+import { clamp } from './math.js';
 
 export const TURN_TIME = 30;
 export const RETREAT_TIME = 3;
 export const SETTLE_CAP = 6;
 export const POWER_RATE = 0.9; // power per second while Space is held
 export const AIM_RATE = 1.2; // rad/s
-const MIN_POWER = 0.1;
+export const MIN_POWER = 0.1;
 
 export const activeUnit = (world) => world.teams[world.turn.team].units[world.turn.unit];
 
@@ -71,7 +72,7 @@ export function applyIntents(world, intents, dt) {
     return move;
   }
   const aimMove = (intents.aimUp ? 1 : 0) - (intents.aimDown ? 1 : 0);
-  u.aim = Math.max(-AIM_LIMIT, Math.min(AIM_LIMIT, u.aim + aimMove * AIM_RATE * dt));
+  u.aim = clamp(u.aim + aimMove * AIM_RATE * dt, -AIM_LIMIT, AIM_LIMIT);
   if (intents.charge) {
     if (!turn.charging) turn.power = 0;
     turn.charging = true;

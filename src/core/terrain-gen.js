@@ -1,4 +1,5 @@
 import { Terrain } from './terrain.js';
+import { between } from './rng.js';
 
 export const WORLD_W = 1920;
 export const WORLD_H = 1080;
@@ -18,7 +19,7 @@ const BOTTOM_ROOM = 150; // lowest ground top sits this far above the world floo
 //   islands   { count, y:[lo,hi], rx:[lo,hi], ry:[lo,hi] }  floating rocks
 
 const smooth = (t) => t * t * (3 - 2 * t);
-const range = (rng, [lo, hi]) => lo + rng() * (hi - lo);
+const range = (rng, [lo, hi]) => between(rng, lo, hi);
 
 function valueNoise(rng, cells) {
   const pts = Array.from({ length: cells + 1 }, () => rng() * 2 - 1);

@@ -2,6 +2,7 @@
 import { stepProjectile } from './physics.js';
 import { explode } from './explode.js';
 import { BOMBLET } from './weapons.js';
+import { between } from './rng.js';
 
 const BOMBLET_SPEED = [220, 320];
 const BOMBLET_FAN = [Math.PI * 0.2, Math.PI * 0.8]; // upward arc, radians above horizontal
@@ -13,7 +14,7 @@ function releaseBomblets(world, p, rng) {
   };
   for (let i = 0; i < BOMBLET.count; i++) {
     const a = BOMBLET_FAN[0] + ((BOMBLET_FAN[1] - BOMBLET_FAN[0]) * i) / (BOMBLET.count - 1);
-    const v = BOMBLET_SPEED[0] + rng() * (BOMBLET_SPEED[1] - BOMBLET_SPEED[0]);
+    const v = between(rng, ...BOMBLET_SPEED);
     world.projectiles.push({ ...base, x: p.x, y: p.y - 8, vx: Math.cos(a) * v, vy: -Math.sin(a) * v });
   }
 }

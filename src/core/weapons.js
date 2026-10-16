@@ -1,13 +1,13 @@
 // The six weapons and what firing each one puts into the world.
-import { explode } from './explode.js';
+import { explode, bodyCentre } from './explode.js';
 import { hitsUnit } from './physics.js';
 
 export const MAX_SPEED = 900; // px/s at full power
 const MUZZLE = 18; // px from the body centre to where a shell appears
 const RAY_RANGE = 900;
 const RAY_START = 12; // clear of the shooter's own body
-const MISSILES = 5;
-const MISSILE_GAP = 40;
+export const MISSILES = 5;
+export const MISSILE_GAP = 40; // px between airstrike missiles
 const MISSILE_SPEED = 300;
 
 // Fields: blast radius `r` and `damage`; `fuse` seconds (null = bursts on contact);
@@ -32,12 +32,17 @@ export function makeProjectile(w, owner, x, y, vx, vy, extra = {}) {
   };
 }
 
-const aimDir = (u) => ({ x: u.facing * Math.cos(u.aim), y: -Math.sin(u.aim) });
+export const aimDir = (u) => ({ x: u.facing * Math.cos(u.aim), y: -Math.sin(u.aim) });
+
+// Where a shell leaves soldier `u` (feet x, y) fired along unit vector `d`.
+export function muzzle(u, d) {
+  const c = bodyCentre(u);
+  return { x: c.x + d.x * MUZZLE, y: c.y + d.y * MUZZLE };
+}
 
 function hitscan(world, u, w) {
   const d = aimDir(u);
-  const cx = u.x;
-  const cy = u.y - 10;
+  const { x: cx, y: cy } = bodyCentre(u);
   const t = world.terrain;
   for (let s = RAY_START; s <= RAY_RANGE; s++) {
     const x = cx + d.x * s;
@@ -55,9 +60,8 @@ function hitscan(world, u, w) {
 // Fire weapon `w` from soldier `u`. power 0..1; target = { x } for the airstrike.
 export function fireWeapon(world, u, w, power, target) {
   const d = aimDir(u);
-  const mx = u.x + d.x * MUZZLE;
-  const my = u.y - 10 + d.y * MUZZLE;
-  world.events.push({ type: 'fire', weapon: w.id, x: mx, y: my });
+  const m = muzzle(u, d);
+  world.events.push({ type: 'fire', weapon: w.id, x: m.x, y: m.y });
   if (w.id === 'shotgun') return hitscan(world, u, w);
   if (w.id === 'dynamite') {
     world.projectiles.push(makeProjectile(w, u.id, u.x, u.y - 3, 0, 0));
@@ -68,6 +72,6 @@ export function fireWeapon(world, u, w, power, target) {
     }
   } else {
     const v = power * MAX_SPEED;
-    world.projectiles.push(makeProjectile(w, u.id, mx, my, d.x * v, d.y * v));
+    world.projectiles.push(makeProjectile(w, u.id, m.x, m.y, d.x * v, d.y * v));
   }
 }

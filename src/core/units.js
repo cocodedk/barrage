@@ -2,6 +2,7 @@
 // (the last air pixel above the ground); the body is 12 px wide and 20 px tall above it.
 import { UNIT_HALF_W } from './physics.js';
 import { hurt, deathEvent } from './explode.js';
+import { clamp } from './math.js';
 
 export const WALK_SPEED = 90; // px/s
 export const JUMP_HEIGHT = 70; // px, kept under the safe fall height
@@ -47,7 +48,7 @@ function startFall(u) {
 function walkBy(u, t, dx) {
   let rem = dx;
   while (Math.abs(rem) > 1e-9) {
-    const step = Math.max(-1, Math.min(1, rem));
+    const step = clamp(rem, -1, 1);
     rem -= step;
     const nx = u.x + step;
     if (nx < UNIT_HALF_W || nx > t.w - UNIT_HALF_W) {
@@ -81,7 +82,7 @@ function land(world, u) {
 function flyBy(world, u, dx, dy) {
   const t = world.terrain;
   for (let rem = dx; Math.abs(rem) > 1e-9; ) {
-    const step = Math.max(-1, Math.min(1, rem));
+    const step = clamp(rem, -1, 1);
     rem -= step;
     const nx = u.x + step;
     if (nx < UNIT_HALF_W || nx > t.w - UNIT_HALF_W || blocked(t, nx, u.y)) {
@@ -91,7 +92,7 @@ function flyBy(world, u, dx, dy) {
     u.x = nx;
   }
   for (let rem = dy; Math.abs(rem) > 1e-9; ) {
-    const step = Math.max(-1, Math.min(1, rem));
+    const step = clamp(rem, -1, 1);
     rem -= step;
     const ny = u.y + step;
     if (blocked(t, u.x, ny)) {
@@ -131,7 +132,7 @@ export function stepUnit(world, u, dt, move = { dir: 0, jump: false }) {
       world.events.push({ type: 'jump', unit: u.id });
     } else if (dir) {
       const next = u.vx + dir * (200 + 1400 * grip) * dt;
-      u.vx = Math.max(-WALK_SPEED, Math.min(WALK_SPEED, next));
+      u.vx = clamp(next, -WALK_SPEED, WALK_SPEED);
     } else {
       const slow = (20 + grip * grip * 3000) * dt;
       u.vx = Math.abs(u.vx) <= slow ? 0 : u.vx - Math.sign(u.vx) * slow;

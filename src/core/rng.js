@@ -9,3 +9,6 @@ export function makeRng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+// A uniform draw in [lo, hi).
+export const between = (rng, lo, hi) => lo + rng() * (hi - lo);

@@ -12,7 +12,7 @@ export const bodyCentre = (unit) => ({ x: unit.x, y: unit.y - 10 });
 export function hurt(world, unit, amount) {
   if (!unit.alive || amount <= 0) return;
   unit.hp = Math.max(0, unit.hp - amount);
-  world.events.push({ type: 'damage', unit: unit.id, amount, x: unit.x, y: unit.y - 10 });
+  world.events.push({ type: 'damage', unit: unit.id, amount, ...bodyCentre(unit) });
 }
 
 function push(unit, dx, dy, d, strength) {

@@ -2,6 +2,7 @@
 import { makeRng } from '../../src/core/rng.js';
 import { stepWorld } from '../../src/core/world.js';
 import { aiIntents } from '../../src/core/ai.js';
+import { bodyCentre } from '../../src/core/explode.js';
 import { flatWorld, DT, GROUND } from './helpers.js';
 
 export const SHOOTER = { x: 1500 };
@@ -32,5 +33,5 @@ export function playPlan(w, plan, rng = makeRng(5), maxSeconds = 25) {
   return null;
 }
 
-export const distTo = (e, u) => Math.hypot(e.x - u.x, e.y - (u.y - 10));
+export const distTo = (e, u) => Math.hypot(e.x - bodyCentre(u).x, e.y - bodyCentre(u).y);
 export { GROUND };

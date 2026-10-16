@@ -3,16 +3,16 @@
 import { WEAPONS, weaponById } from '../core/weapons.js';
 import { activeUnit } from '../core/turns.js';
 import { AIM_LIMIT } from '../core/units.js';
+import { bodyCentre } from '../core/explode.js';
+import { clamp } from '../core/math.js';
+import { W, H } from './sprites.js';
 
-const W = 1920;
-const H = 1080;
 const MARKER_SPEED = 720; // px/s, keyboard airstrike target
 const KEYS = {
   left: ['ArrowLeft', 'KeyA'], right: ['ArrowRight', 'KeyD'], up: ['ArrowUp', 'KeyW'],
   down: ['ArrowDown', 'KeyS'], jump: ['Enter', 'NumpadEnter'], fire: ['Space'],
 };
 const DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // armed: a fire press began during this aim phase (so a held key never fires into a new turn).
 export const createControls = () => ({ armed: false, markerX: null });
@@ -40,7 +40,7 @@ function pickWeapon(input, turn) {
 
 function mouseAim(u, at) {
   const dx = at.x - u.x;
-  const dy = u.y - 10 - at.y;
+  const dy = bodyCentre(u).y - at.y;
   if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
   if (Math.abs(dx) >= 1) u.facing = Math.sign(dx);
   u.aim = clamp(Math.atan2(dy, Math.abs(dx)), -AIM_LIMIT, AIM_LIMIT);

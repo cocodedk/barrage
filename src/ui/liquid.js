@@ -44,13 +44,13 @@ export function drawLiquid(ctx, level, look, t) {
   ctx.lineTo(W + 200, H + 200);
   ctx.fill();
   // a second, slower ripple line just below the surface
-  ctx.strokeStyle = rgba(mix(color, '#ffffff', 0.5), 0.25);
+  ctx.strokeStyle = rgba(shade(color, 0.5), 0.25);
   ctx.lineWidth = 2;
   ctx.beginPath();
   for (let x = -200; x <= W + 200; x += STEP) ctx.lineTo(x, surface(x * 1.3 + 90, y + 9, t * 0.7));
   ctx.stroke();
   // bright surface line
-  ctx.strokeStyle = hot ? '#fff0a0' : rgba(mix(color, '#ffffff', 0.7), 0.9);
+  ctx.strokeStyle = hot ? '#fff0a0' : rgba(shade(color, 0.7), 0.9);
   ctx.lineWidth = hot ? 3 : 2;
   ctx.beginPath();
   for (let x = -200; x <= W + 200; x += STEP) ctx.lineTo(x, surface(x, y, t));
@@ -64,7 +64,7 @@ export function drawLiquid(ctx, level, look, t) {
     }
   }
   // glints riding the surface
-  const g = glow(mix(color, '#ffffff', 0.8));
+  const g = glow(shade(color, 0.8));
   for (let i = 0; i < 22; i++) {
     const x = ((hash(i + 40) * W + t * (hash(i + 41) - 0.5) * 60) % W + W) % W;
     ctx.globalAlpha = Math.max(0, Math.sin(t * (1.5 + hash(i + 42) * 2) + i * 2.1)) * 0.8;

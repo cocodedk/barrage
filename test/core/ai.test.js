@@ -89,9 +89,6 @@ test('no ballistic shot clear: calls an airstrike on a soldier under open sky', 
   const e = enemyOf(w);
   // A tall wall between them blocks every arc the muzzle can fly; the enemy stays under open sky.
   const t = w.terrain;
-  for (let x = 1100; x < 1180; x++) t.mask.fill(1, 0, 0), 0;
-  t.mask.fill(0);
-  t.mask.fill(1, 800 * t.w);
   for (let y = 0; y < 800; y++) t.mask.fill(1, y * t.w + 1100, y * t.w + 1180);
   const plan = aiPlan(w, makeRng(1));
   assert.equal(plan.weapon, 'airstrike');

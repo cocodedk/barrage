@@ -6,12 +6,20 @@ import { createWorld, stepWorld } from '../../src/core/world.js';
 export const DT = 1 / 60;
 export const GROUND = 800; // first solid row of the flat world
 
+export const hero = (world) => world.teams[0].units[0];
+
+// Empty sky over solid ground from row y down.
+export function setFloor(world, y) {
+  const t = world.terrain;
+  t.mask.fill(0);
+  t.mask.fill(1, y * t.w);
+}
+
 // Flat ground from y=800 down; team 0 at x 300/360/420, team 1 at 1500/1560/1620.
 export function flatWorld(levelOver = {}, seed = 1) {
   const level = { ...LEVELS[0], windMax: 0, drag: 0, ...levelOver };
   const world = createWorld(level, 'versus', makeRng(seed));
-  world.terrain.mask.fill(0);
-  world.terrain.mask.fill(1, GROUND * world.terrain.w);
+  setFloor(world, GROUND);
   world.teams.forEach((team, ti) => {
     team.units.forEach((u, i) => {
       Object.assign(u, { x: (ti ? 1500 : 300) + i * 60, y: GROUND - 1, vx: 0, vy: 0, onGround: true });
@@ -27,12 +35,11 @@ export function flatWorld(levelOver = {}, seed = 1) {
 export function run(world, seconds, intents = {}, rng = makeRng(7)) {
   const n = Math.round(seconds / DT);
   for (let i = 0; i < n; i++) {
-    stepWorld(world, DT, typeof intents === 'function' ? intents(i) : intents, rng);
+    stepWorld(world, DT, intents, rng);
   }
 }
 
 export const eventsOf = (world, type) => world.events.filter((e) => e.type === type);
-
 
 // Select `weapon`, hold Space for `charge` seconds, release (extra carries e.g. a target).
 export function shoot(world, weapon, charge = 0.5, extra = {}) {

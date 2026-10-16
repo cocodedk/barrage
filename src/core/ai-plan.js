@@ -1,6 +1,8 @@
 // The computer opponent's decision: which weapon, where to stand, how to aim and charge.
 import { weaponById } from './weapons.js';
-import { activeUnit } from './turns.js';
+import { activeUnit, MIN_POWER } from './turns.js';
+import { AIM_LIMIT } from './units.js';
+import { DEG, clamp } from './math.js';
 import { bodyCentre } from './explode.js';
 import { simWorldFor, bestShot, impactValue } from './ai-sim.js';
 
@@ -11,11 +13,6 @@ const GOOD_VALUE = 12; // net damage below which a shot counts as "no clear shot
 const CLOSE = 80; // enemy this near: grenade or dynamite country
 const WALK_OFFSETS = [160, 80, -160, -80]; // toward the enemy first, far before near
 const SIM_BUDGET = 800; // shots simulated before the optional stages (grenade, walking) are skipped
-const MIN_POWER = 0.1;
-const AIM_LIMIT = Math.PI / 2;
-const DEG = Math.PI / 180;
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const centreOf = (x, y) => ({ x, y: y - 10 });
 
 // Feet y of walkable ground near (x, y), or null if there is none within climbing/dropping reach.
 function groundNear(t, x, y) {
@@ -51,7 +48,7 @@ function skyOpen(t, x, headY) {
 
 // Best bazooka/grenade shot from feet `org`, trying the given facings (default: toward enemies).
 function ballisticPlan(sw, ctx, org, skill, facings, fast = false) {
-  const near = ctx.enemies.some((c) => Math.hypot(c.x - org.x, c.y - (org.y - 10)) <= CLOSE);
+  const near = ctx.enemies.some((c) => Math.hypot(c.x - org.x, c.y - bodyCentre(org).y) <= CLOSE);
   const sides = facings || [...new Set(ctx.enemies.map((c) => (c.x >= org.x ? 1 : -1)))];
   let best = null;
   const consider = (id) => {
@@ -73,7 +70,7 @@ function walkPlan(world, sw, ctx, u, skill, towards) {
   for (const off of offs) {
     const end = ctx.work.sims < SIM_BUDGET && walkEnd(world, u, off);
     if (!end) continue;
-    const here = { enemies: ctx.enemies, own: [...ctx.mates, centreOf(end.x, end.y)], work: ctx.work };
+    const here = { enemies: ctx.enemies, own: [...ctx.mates, bodyCentre(end)], work: ctx.work };
     const s = ballisticPlan(sw, here, end, skill, [Math.sign(off)], true);
     if (!best || s.value > best.value) best = { ...s, moveSteps: off, x: end.x };
     if (s.value >= GOOD_VALUE) break;
@@ -119,7 +116,7 @@ export function aiPlan(world, rng) {
   const idle = { weapon: 'bazooka', moveSteps: 0, aim: u.aim, power: 0.5, facing: u.facing, x: u.x };
   if (!enemies.length) return idle;
   const sw = simWorldFor(world, u);
-  const ctx = { enemies, mates, own: [...mates, centreOf(u.x, u.y)], work: { sims: 0 } };
+  const ctx = { enemies, mates, own: [...mates, bodyCentre(u)], work: { sims: 0 } };
   const dyn = skill >= 0.5 && dynamitePlan(u, ctx); // only worth it when the enemy is right there
   if (dyn) return { ...idle, ...dyn, power: 0 };
   let pick = ballisticPlan(sw, ctx, u, skill);

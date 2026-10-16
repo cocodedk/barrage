@@ -1,5 +1,5 @@
 // Painting helpers shared by the sky, its bodies and the animated flourishes.
-import { W, makeCanvas, mix, hash, noise2, glow, soft } from './sprites.js';
+import { W, makeCanvas, mix, shade, hash, noise2, glow, soft } from './sprites.js';
 
 // Colour of the sky gradient at u (0 top .. 1 bottom).
 export function sampleSky(stops, u) {
@@ -39,7 +39,7 @@ export function sun(g, x, y, r, color, haloScale = 7, haloAlpha = 0.9) {
   g.drawImage(glow(color), x - R, y - R, R * 2, R * 2);
   g.globalAlpha = 1;
   g.globalCompositeOperation = 'source-over';
-  g.fillStyle = mix(color, '#ffffff', 0.55);
+  g.fillStyle = shade(color, 0.55);
   g.beginPath();
   g.arc(x, y, r, 0, Math.PI * 2);
   g.fill();

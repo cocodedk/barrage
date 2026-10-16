@@ -3,19 +3,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { unitAtRest } from '../../src/core/units.js';
-import { flatWorld, run, DT } from './helpers.js';
+import { flatWorld, setFloor, hero, run, DT } from './helpers.js';
 
 const FLOOR = 560; // near enough below the speck to drop without fall damage
 
 // Empty sky, a floor at y = 560 and one speck at (94, 487); the hero falls from (100.5, 470).
 function speckWorld() {
   const w = flatWorld();
-  const t = w.terrain;
-  t.mask.fill(0);
-  t.mask.fill(1, FLOOR * t.w);
-  t.mask[487 * t.w + 94] = 1;
+  setFloor(w, FLOOR);
+  w.terrain.mask[487 * w.terrain.w + 94] = 1;
   for (const team of w.teams) for (const u of team.units) Object.assign(u, { y: FLOOR - 1, peakY: FLOOR - 1 });
-  const u = w.teams[0].units[0];
+  const u = hero(w);
   Object.assign(u, { x: 100.5, y: 470, peakY: 470, vx: 0, vy: 0, onGround: false });
   return { w, u };
 }

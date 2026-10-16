@@ -1,8 +1,6 @@
 // Drawing for fx state (src/fx): particles by kind, shockwave rings, flashes, floating text,
 // and the full-screen tint big flashes leave. Pure reads of fx; nothing is changed here.
-import { W, H, rgba, glow, soft } from './sprites.js';
-
-const INK = '#141821';
+import { W, H, INK, rgba, glow, soft } from './sprites.js';
 
 function plain(ctx, p, chunky) {
   const f = p.life / p.max;

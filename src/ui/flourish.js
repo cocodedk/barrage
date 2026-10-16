@@ -2,10 +2,9 @@
 // Phases: 'sky' (screen space, behind the land), 'far' (just after the farthest parallax
 // layer, given that layer's origin), 'mid' (after all layers), 'front' (over everything in
 // the world) and 'screen' (full-screen tints after the camera).
-import { W, H, rgba, mix, hash, glow, soft, star } from './sprites.js';
+import { W, H, rgba, shade, hash, glow, soft, star, wrap } from './sprites.js';
 import { SKY } from './flourish-sky.js';
 
-const wrap = (v, lo, hi) => lo + ((((v - lo) % (hi - lo)) + (hi - lo)) % (hi - lo));
 
 function rays(ctx, v, t) {
   const warm = v.level.id === 3;
@@ -35,7 +34,7 @@ function rays(ctx, v, t) {
 }
 
 function mist(ctx, v, t) {
-  const color = mix(v.level.sky[v.level.sky.length - 1][1], '#ffffff', 0.35);
+  const color = shade(v.level.sky[v.level.sky.length - 1][1], 0.35);
   const sprite = soft(color);
   for (let i = 0; i < 9; i++) {
     const w = 500 + hash(i + 210) * 400;

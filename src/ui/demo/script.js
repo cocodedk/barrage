@@ -6,10 +6,10 @@
 //   ready(world, state)        when the try begins: note where things stand
 //   check(world, events, state) -> true once the player has done it (events: this tick's)
 import { aiIntents, THINK_TIME } from '../../core/ai-intents.js';
+import { DEG } from '../../core/math.js';
 import { hero, arrange, planShot, digPit, pitShove } from './scene.js';
 
 const STRONG_WIND = 150; // px/s^2: the HUD arrow turns red
-const DEG = Math.PI / 180;
 const hold = (secs, intents = {}) => (t) => (t < secs ? intents : null);
 const fired = (events, weapon) => events.some((e) => e.type === 'fire' && e.weapon === weapon);
 

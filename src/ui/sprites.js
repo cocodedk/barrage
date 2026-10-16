@@ -1,7 +1,16 @@
 // Shared drawing helpers: offscreen canvases, colour maths, hashing and cached sprites.
 // Glow is never shadowBlur: it is a cached radial-gradient sprite drawn with 'lighter'.
-export const W = 1920;
-export const H = 1080;
+import { WORLD_W, WORLD_H } from '../core/terrain-gen.js';
+
+export const W = WORLD_W;
+export const H = WORLD_H;
+export const INK = '#141821'; // outlines
+export const INK_SOFT = 'rgba(10,12,20,0.7)'; // dark under-strokes that keep a line readable
+
+// v wrapped into [lo, hi).
+export const wrap = (v, lo, hi) => lo + ((((v - lo) % (hi - lo)) + (hi - lo)) % (hi - lo));
+export const lighter = (ctx) => { ctx.globalCompositeOperation = 'lighter'; };
+export const normal = (ctx) => { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; };
 
 export function makeCanvas(w, h) {
   const c = document.createElement('canvas');

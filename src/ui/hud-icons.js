@@ -1,5 +1,5 @@
 // Weapon icons for the HUD weapon bar, drawn as vector shapes in a 64 x 64 box.
-const INK = '#141821';
+import { INK } from './sprites.js';
 
 function outline(ctx) {
   ctx.lineWidth = 3;
