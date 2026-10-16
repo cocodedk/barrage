@@ -96,6 +96,20 @@ test('every level leaves 6 clear spawns on ground above the liquid', () => {
   }
 });
 
+test('caves really remove ground on every level that has them', () => {
+  const solidCount = (t) => t.mask.reduce((n, v) => n + v, 0);
+  const withCaves = LEVELS.filter((l) => l.terrain.caves);
+  assert.ok(withCaves.length >= 6);
+  for (const l of withCaves) {
+    // Caves draw from the rng before platforms and islands, so strip those to compare
+    // like with like.
+    const base = { ...l.terrain, platforms: undefined, islands: undefined };
+    const plain = generateTerrain({ ...base, caves: undefined }, makeRng(8));
+    const holed = generateTerrain(base, makeRng(8));
+    assert.ok(solidCount(holed) < solidCount(plain) - 1000, `level ${l.id} caves carved nothing`);
+  }
+});
+
 test('spawnPoints is deterministic', () => {
   const l = LEVELS[2];
   const run = () => {

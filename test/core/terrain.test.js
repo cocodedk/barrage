@@ -32,6 +32,16 @@ test('carve of r=10 removes about pi*r^2 pixels and clears the centre', () => {
   assert.equal(t.solid(100, 115), true);
 });
 
+test('carve accepts a fractional radius and centre', () => {
+  for (const [x, y, r] of [[100, 100, 10.6], [100.4, 99.7, 10.6], [80.5, 120.5, 33.3]]) {
+    const t = solidBlock();
+    const removed = t.carve(x, y, r);
+    const want = Math.PI * r * r;
+    assert.ok(Math.abs(removed - want) <= want * 0.1, `r=${r} removed ${removed}, want ~${want}`);
+    assert.equal(t.solid(Math.round(x), Math.round(y)), false);
+  }
+});
+
 test('carve counts only pixels that were solid', () => {
   const t = solidBlock();
   const first = t.carve(100, 100, 10);

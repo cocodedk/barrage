@@ -25,6 +25,22 @@ test('every file in src, test and index.html is under 200 lines', () => {
   }
 });
 
+test('src/core and src/fx stay pure: no window, document, Math.random or Date.now', () => {
+  const banned = [/\bwindow\b/, /\bdocument\b/, /Math\.random/, /Date\.now/];
+  for (const dir of ['core', 'fx']) {
+    let files = [];
+    try {
+      files = walk(join(root, 'src', dir));
+    } catch {
+      continue; // src/fx may not exist yet
+    }
+    for (const f of files) {
+      const text = readFileSync(f, 'utf8');
+      for (const re of banned) assert.ok(!re.test(text), `${f} matches ${re}`);
+    }
+  }
+});
+
 test('index.html and src contain no external URLs', () => {
   const files = [...walk(join(root, 'src')), join(root, 'index.html')];
   for (const f of files) {

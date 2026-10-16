@@ -15,14 +15,18 @@ export class Terrain {
     return this.mask[iy * this.w + ix] === 1;
   }
 
-  // Remove a disc of radius r. Returns how many solid pixels it removed.
+  // Remove a disc of radius r (x, y and r may be fractional). Returns how many solid
+  // pixels it removed.
   carve(x, y, r) {
     const cx = Math.round(x);
     const cy = Math.round(y);
+    const reach = Math.ceil(r);
     const { w, h, mask } = this;
     let removed = 0;
-    for (let dy = Math.max(-r, -cy); dy <= Math.min(r, h - 1 - cy); dy++) {
-      const half = Math.floor(Math.sqrt(r * r - dy * dy));
+    for (let dy = Math.max(-reach, -cy); dy <= Math.min(reach, h - 1 - cy); dy++) {
+      const rem = r * r - dy * dy;
+      if (rem < 0) continue;
+      const half = Math.floor(Math.sqrt(rem));
       const row = (cy + dy) * w;
       for (let x0 = Math.max(cx - half, 0); x0 <= Math.min(cx + half, w - 1); x0++) {
         if (mask[row + x0]) {
