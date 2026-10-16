@@ -1,5 +1,5 @@
 import { Terrain } from './terrain.js';
-import { between } from './rng.js';
+import { between, pick } from './rng.js';
 
 export const WORLD_W = 1920;
 export const WORLD_H = 1080;
@@ -22,7 +22,7 @@ const smooth = (t) => t * t * (3 - 2 * t);
 const range = (rng, [lo, hi]) => between(rng, lo, hi);
 
 function valueNoise(rng, cells) {
-  const pts = Array.from({ length: cells + 1 }, () => rng() * 2 - 1);
+  const pts = Array.from({ length: cells + 1 }, () => between(rng, -1, 1));
   return (u) => {
     const p = u * cells;
     const i = Math.min(Math.floor(p), cells - 1);
@@ -132,7 +132,7 @@ export function spawnPoints(terrain, count, rng, liquidY) {
   }
   const taken = [];
   const free = (c) => taken.every((p) => Math.hypot(p.x - c.x, p.y - c.y) >= SPAWN_GAP);
-  const take = (pool) => taken.push(pool[Math.floor(rng() * pool.length)]);
+  const take = (pool) => taken.push(pick(rng, pool));
   const zoneW = (terrain.w - 2 * SPAWN_MARGIN) / count;
   for (let i = 0; i < count; i++) {
     const pool = cands.filter((c) => Math.floor((c.x - SPAWN_MARGIN) / zoneW) === i && free(c));

@@ -5,7 +5,7 @@ import { activeUnit } from '../core/turns.js';
 import { AIM_LIMIT } from '../core/units.js';
 import { bodyCentre } from '../core/explode.js';
 import { clamp } from '../core/math.js';
-import { W, H } from './sprites.js';
+import { WORLD_W as W, WORLD_H as H } from '../core/terrain-gen.js';
 
 const MARKER_SPEED = 720; // px/s, keyboard airstrike target
 const KEYS = {
@@ -65,7 +65,7 @@ export function humanIntents(c, input, world, view, cam, dt) {
   const out = {};
   if (aiming) out.weapon = pickWeapon(input, turn);
   const w = weaponById(turn.weapon);
-  const strike = aiming && w.id === 'airstrike';
+  const strike = aiming && w.target;
   const at = m.seen && (strike || m.moved) ? toWorld(view, cam, m.x, m.y) : null; // only read when used
 
   if (strike) {

@@ -1,8 +1,9 @@
 // The computer opponent's decision: which weapon, where to stand, how to aim and charge.
-import { weaponById } from './weapons.js';
+import { weaponById, dropPoint, MISSILE_OFFSETS, MISSILE_GAP } from './weapons.js';
 import { activeUnit, MIN_POWER } from './turns.js';
 import { AIM_LIMIT } from './units.js';
 import { DEG, clamp } from './math.js';
+import { between } from './rng.js';
 import { bodyCentre } from './explode.js';
 import { simWorldFor, bestShot, impactValue } from './ai-sim.js';
 
@@ -80,8 +81,7 @@ function walkPlan(world, sw, ctx, u, skill, towards) {
 
 // Own soldiers (shooter included) must stay clear of every missile's line.
 function airstrikePlan(world, u, enemies, mates) {
-  const spread = [-80, -40, 0, 40, 80];
-  const free = (x) => mates.every((m) => spread.every((o) => Math.abs(m.x - (x + o)) > 40));
+  const free = (x) => mates.every((m) => MISSILE_OFFSETS.every((o) => Math.abs(m.x - (x + o)) > MISSILE_GAP));
   const open = enemies
     .filter((c) => skyOpen(world.terrain, c.x, c.y) && free(c.x) && Math.abs(c.x - u.x) > 40)
     .sort((a, b) => Math.abs(a.x - u.x) - Math.abs(b.x - u.x));
@@ -90,21 +90,19 @@ function airstrikePlan(world, u, enemies, mates) {
 
 function dynamitePlan(u, ctx) {
   const w = weaponById('dynamite');
-  const at = { hit: 'fuse', x: u.x, y: u.y - 3 };
+  const at = { hit: 'fuse', ...dropPoint(u) };
   const value = impactValue(at, w, { enemies: ctx.enemies, own: ctx.mates });
   if (value < GOOD_VALUE) return null;
-  const nearest = ctx.enemies.reduce((a, b) => (Math.abs(b.x - u.x) < Math.abs(a.x - u.x) ? b : a));
+  const nearest = nearestTo(ctx.enemies, u.x);
   return { weapon: 'dynamite', retreat: nearest.x > u.x ? -1 : 1 };
 }
 
-// Choose this turn's shot. Returns { weapon, moveSteps, aim, power, facing, x, target?, retreat? }:
-// aim in radians above horizontal, power 0..1, facing -1|1 the soldier must face when firing,
-// x the planned standing x, target { x } for the airstrike, retreat -1|1 to walk off after dynamite.
-export function aiPlan(world, rng) {
-  const u = activeUnit(world);
-  const skill = clamp(world.teams[u.team].ai?.skill ?? 1, 0, 1);
-  const noiseA = (rng() * 2 - 1) * (1 - skill);
-  const noiseP = (rng() * 2 - 1) * (1 - skill);
+// The first point in `list` closest in x to `x`.
+export const nearestTo = (list, x) => list.reduce((a, b) => (Math.abs(b.x - x) < Math.abs(a.x - x) ? b : a));
+
+// Body centres of soldier u's living enemies and mates (in team order), the bodies a shot must
+// spare (mates and u himself) and the simulation counter: what bestShot scores against.
+export function shotContext(world, u) {
   const enemies = [];
   const mates = [];
   for (const team of world.teams) {
@@ -113,10 +111,22 @@ export function aiPlan(world, rng) {
       (team.id === u.team ? mates : enemies).push(bodyCentre(v));
     }
   }
+  return { enemies, mates, own: [...mates, bodyCentre(u)], work: { sims: 0 } };
+}
+
+// Choose this turn's shot. Returns { weapon, moveSteps, aim, power, facing, x, target?, retreat? }:
+// aim in radians above horizontal, power 0..1, facing -1|1 the soldier must face when firing,
+// x the planned standing x, target { x } for the airstrike, retreat -1|1 to walk off after dynamite.
+export function aiPlan(world, rng) {
+  const u = activeUnit(world);
+  const skill = clamp(world.teams[u.team].ai?.skill ?? 1, 0, 1);
+  const noiseA = between(rng, -1, 1) * (1 - skill);
+  const noiseP = between(rng, -1, 1) * (1 - skill);
+  const ctx = shotContext(world, u);
+  const { enemies } = ctx;
   const idle = { weapon: 'bazooka', moveSteps: 0, aim: u.aim, power: 0.5, facing: u.facing, x: u.x };
   if (!enemies.length) return idle;
   const sw = simWorldFor(world, u);
-  const ctx = { enemies, mates, own: [...mates, bodyCentre(u)], work: { sims: 0 } };
   const dyn = skill >= 0.5 && dynamitePlan(u, ctx); // only worth it when the enemy is right there
   if (dyn) return { ...idle, ...dyn, power: 0 };
   let pick = ballisticPlan(sw, ctx, u, skill);
@@ -128,7 +138,7 @@ export function aiPlan(world, rng) {
   if (pick.value < GOOD_VALUE && skill >= 0.4) {
     const strike = airstrikePlan(world, u, enemies, ctx.own);
     if (strike) {
-      const x = strike.x + (rng() * 2 - 1) * MAX_TARGET_NOISE * (1 - skill);
+      const x = strike.x + between(rng, -1, 1) * MAX_TARGET_NOISE * (1 - skill);
       return { ...idle, weapon: 'airstrike', power: 0, target: { x } };
     }
   }

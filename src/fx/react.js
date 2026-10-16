@@ -1,7 +1,7 @@
 // Turns core events into effects. Pure: randomness comes from `rng`, nothing is drawn.
 import { addParticle } from './particles.js';
 import { addShake, startSlowMo } from './fx.js';
-import { between } from '../core/rng.js';
+import { between, pick } from '../core/rng.js';
 
 const FALLBACK_FILL = ['#7b5233', '#3b2515'];
 const FALLBACK_LIQUID = '#2a8fd6';
@@ -12,7 +12,6 @@ const DEBRIS_BOUNCE = 0.4;
 const GRAVE_LIQUID_MARGIN = 4; // a death this close to the liquid surface is a drowning
 const LAND_DUST_MIN = 8; // impact px below this raises no dust
 
-const pick = (rng, list) => list[Math.floor(rng() * list.length)];
 const count = (n) => Math.max(1, Math.round(n));
 
 function spark(fx, rng, x, y, speed) {

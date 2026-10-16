@@ -1,11 +1,11 @@
 // The demo's stagehands: where everyone stands, keeping the turn on the player between steps,
 // and planning the scripted shots. UI layer only: it places soldiers and resets the turn the way
 // a director sets a scene, but every shot, blast and fall still runs through the real core.
-import { TURN_TIME, newTurnState, setWeapon } from '../../core/turns.js';
+import { TURN_TIME, newTurnState, setWeapon, worldAtRest } from '../../core/turns.js';
 import { weaponById } from '../../core/weapons.js';
-import { unitAtRest } from '../../core/units.js';
-import { bodyCentre } from '../../core/explode.js';
+import { MAX_HP } from '../../core/units.js';
 import { simWorldFor, bestShot } from '../../core/ai-sim.js';
+import { shotContext, nearestTo } from '../../core/ai-plan.js';
 import { DEG } from '../../core/math.js';
 
 export const DEMO_SEED = 11; // Green Meadow with this seed is gentle and rolling
@@ -27,13 +27,14 @@ export function place(world, u, x) {
 function revive(world, u, fx) {
   if (!u.alive && fx) fx.graves = fx.graves.filter((g) => g.unit !== u.id);
   place(world, u, HOME[u.team][world.teams[u.team].units.indexOf(u)]);
-  Object.assign(u, { hp: 100, alive: true });
+  Object.assign(u, { hp: MAX_HP, alive: true });
 }
 
 // The player's turn, from the top: aim phase, no shot fired, a full clock.
 function freshTurn(world) {
   const { weapon } = world.turn;
-  Object.assign(world.turn, newTurnState(), { weapon, shotsLeft: weaponById(weapon).shots });
+  Object.assign(world.turn, newTurnState());
+  setWeapon(world, weapon);
 }
 
 // Everyone home at full health, the hero facing the enemy (the first step and its replays).
@@ -53,15 +54,14 @@ export function tidy(world, fx) {
   for (const team of world.teams) {
     for (const u of team.units) {
       if (!u.alive || u.y >= world.liquidY || u === hero(world)) revive(world, u, fx);
-      else u.hp = 100;
+      else u.hp = MAX_HP;
     }
   }
   hero(world).facing = 1;
   freshTurn(world);
 }
 
-const still = (world) => world.projectiles.length === 0 && world.teams.every((t) => t.units.every(unitAtRest));
-export const calm = (world) => world.turn.phase === 'aim' && still(world);
+export const calm = (world) => world.turn.phase === 'aim' && worldAtRest(world);
 
 // Run after every tick: the turn never leaves the hero. When a shot has played out, he gets a
 // fresh aim phase instead of the core handing the turn to the other team. `clock` lets the
@@ -79,7 +79,7 @@ export function holdTurn(world, clock = false, fx = null) {
     return;
   }
   turn.timeLeft = TURN_TIME; // a retreat never times out into the other team's turn
-  if (still(world)) freshTurn(world);
+  if (worldAtRest(world)) freshTurn(world);
   else if (turn.phase === 'settling') turn.phase = 'retreat'; // or the core would end the turn
 }
 
@@ -87,10 +87,9 @@ export function holdTurn(world, clock = false, fx = null) {
 // nearest enemy's body), in the shape aiIntents plays out: face, aim, then charge to the power.
 export function planShot(world, weaponId, target) {
   const u = hero(world);
-  const foes = world.teams[1].units.filter((v) => v.alive);
-  const aim = target || bodyCentre(foes.reduce((a, b) => (Math.abs(b.x - u.x) < Math.abs(a.x - u.x) ? b : a)));
-  const mates = world.teams[0].units.filter((v) => v.alive && v !== u).map(bodyCentre);
-  const ctx = { enemies: [aim], own: [...mates, bodyCentre(u)], work: { sims: 0 } };
+  const all = shotContext(world, u);
+  const aim = target || nearestTo(all.enemies, u.x);
+  const ctx = { ...all, enemies: [aim] };
   const facing = aim.x >= u.x ? 1 : -1;
   const s = bestShot(simWorldFor(world, u), weaponById(weaponId), ctx, u, facing);
   return { weapon: weaponId, moveSteps: 0, facing, x: u.x, aim: s.deg * DEG, power: s.power };

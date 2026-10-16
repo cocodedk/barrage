@@ -12,3 +12,6 @@ export function makeRng(seed) {
 
 // A uniform draw in [lo, hi).
 export const between = (rng, lo, hi) => lo + rng() * (hi - lo);
+
+// A uniform pick from `list`.
+export const pick = (rng, list) => list[Math.floor(rng() * list.length)];

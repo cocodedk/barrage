@@ -4,6 +4,7 @@
 import { createWorld, stepWorld } from '../core/world.js';
 import { endMatch } from '../core/turns.js';
 import { aiPlan, aiIntents } from '../core/ai.js';
+import { inFlight } from '../core/weapons.js';
 import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
 import { applyEvent } from '../fx/react.js';
@@ -47,7 +48,7 @@ function freshRun(m, worldRng) {
 export function replayAttract(m) {
   freshRun(m, makeRng(m.seed));
   m.rng = makeRng(m.seed + ++m.replays);
-  replayTerrain(m.view, m.world);
+  replayTerrain(m.view);
   drain(m);
 }
 
@@ -112,7 +113,7 @@ export function stepMatch(m, realDt, input) {
 }
 
 export function drawMatch(m, realDt, t) {
-  stepCamera(m.cam, m.world.projectiles[0] || null, realDt);
+  stepCamera(m.cam, m.world.projectiles.find(inFlight) || null, realDt); // not planted dynamite
   drawFrame(m.view, m.world, m.fx, m.cam, t);
 }
 

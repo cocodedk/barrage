@@ -1,7 +1,7 @@
 // Shot simulation for the computer opponent. Everything here runs stepProjectile on a cloned
 // projectile and a read-only view of the world: nothing is ever carved, damaged or pushed.
 import { stepProjectile } from './physics.js';
-import { makeProjectile, muzzle, MAX_SPEED } from './weapons.js';
+import { makeProjectile, muzzle, aimDir, MAX_SPEED } from './weapons.js';
 import { REACH } from './explode.js';
 import { DEG } from './math.js';
 
@@ -39,8 +39,7 @@ function flyShell(sw, w, mx, my, vx, vy, dt) {
 
 // Fire from feet (org.x, org.y) at `deg` above horizontal, facing -1|1, power 0..1.
 function shotImpact(sw, w, org, facing, deg, power, dt) {
-  const a = deg * DEG;
-  const d = { x: facing * Math.cos(a), y: -Math.sin(a) };
+  const d = aimDir({ facing, aim: deg * DEG });
   const m = muzzle(org, d);
   const v = power * MAX_SPEED;
   return flyShell(sw, w, m.x, m.y, d.x * v, d.y * v, dt);

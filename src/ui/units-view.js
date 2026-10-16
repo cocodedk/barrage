@@ -3,7 +3,7 @@
 // since the last frame (landing, losing hp).
 import { INK_SOFT, rgba, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
-import { aimDir, MISSILES, MISSILE_GAP } from '../core/weapons.js';
+import { aimDir, weaponById, MISSILE_OFFSETS } from '../core/weapons.js';
 import { activeUnit } from '../core/turns.js';
 
 const RETICLE = 92;
@@ -111,8 +111,8 @@ function target(ctx, c, color, t) {
     ctx.stroke();
   }
   ctx.setLineDash([]);
-  for (let i = 0; i < MISSILES; i++) {
-    const x = c.x + (i - (MISSILES - 1) / 2) * MISSILE_GAP;
+  for (const o of MISSILE_OFFSETS) {
+    const x = c.x + o;
     ctx.fillStyle = INK_SOFT;
     ctx.fillRect(x - 4, c.y - 4, 8, 8);
     ctx.fillStyle = shade(color, 0.5);
@@ -153,10 +153,9 @@ export function drawUnits(ctx, v, world, fx, t, dt) {
     }
   }
   for (const team of world.teams) for (const u of team.units) if (u.alive) label(ctx, u, team.color);
-  if (showAim && turn.weapon !== 'airstrike') aim(ctx, active, turn, t);
-  if (showAim && turn.weapon === 'airstrike' && v.cursor) {
-    target(ctx, v.cursor, color, t);
-  }
+  const strike = weaponById(turn.weapon).target;
+  if (showAim && !strike) aim(ctx, active, turn, t);
+  if (showAim && strike && v.cursor) target(ctx, v.cursor, color, t);
   if (active.alive && (showAim || turn.phase === 'retreat')) {
     marker(ctx, active, shade(color, 0.1), t);
   }

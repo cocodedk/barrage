@@ -2,6 +2,7 @@
 import { W, H, makeCanvas, rgba, shade, glow } from './sprites.js';
 import { makeRng } from '../core/rng.js';
 import { paintLayer, SKIRT } from './parallax-shapes.js';
+import { skyHaze } from './sky-paint.js';
 
 const MARGIN = 260; // spare width each side so camera shifts never show an edge
 
@@ -15,7 +16,7 @@ export function horizonOf(terrain) {
 }
 
 export function buildLayers(level, look, horizon) {
-  const haze = level.sky[level.sky.length - 1][1];
+  const haze = skyHaze(level);
   return level.layers.map((L, i) => {
     const w = W + MARGIN * 2;
     const c = makeCanvas(w, L.height + SKIRT);

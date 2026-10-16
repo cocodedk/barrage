@@ -3,11 +3,12 @@
 //   createView(canvas, level, world) -> view
 //   drawFrame(view, world, fx, camera, t)   t: seconds, any monotonic clock
 //   view.onCrater(x, y, r)                  cut a crater the core already carved
-//   replayTerrain(view, world)              same seed again: restore the kept bake, no re-bake
+//   replayTerrain(view)                     same seed again: restore the kept bake, no re-bake
 //   view.cursor = { x, y } | null           airstrike target (world px), from the input layer
 // The canvas is sized to its CSS box; the 1920 x 1080 world is letterboxed into it, and the
 // backing store never exceeds 1:1 with the world (Pi 4 fill rate).
 import { W, H, makeCanvas, shade } from './sprites.js';
+import { skyTop } from './sky-paint.js';
 import { lookFor } from './looks.js';
 import { buildSky } from './sky.js';
 import { buildLayers, drawLayers, horizonOf } from './parallax.js';
@@ -24,7 +25,7 @@ import { drawHud } from './hud.js';
 export function createView(canvas, level, world, keepBake = false) {
   const look = lookFor(level);
   const v = {
-    canvas, ctx: canvas.getContext('2d'), level, look, world,
+    canvas, ctx: canvas.getContext('2d'), level, look,
     sky: buildSky(level, look), low: level.pixel ? makeCanvas(W / 4, H / 4) : null,
     lastT: null, now: 0, showHud: true, fit: { css: '', s: 1, ox: 0, oy: 0 },
     cursor: null, // { x, y } airstrike target, set by the input layer; null hides the marker
@@ -45,21 +46,20 @@ function rebuildTerrain(v, world, keepBake = false) {
     v.pristine = makeCanvas(c.width, c.height);
     v.pristine.getContext('2d').drawImage(c, 0, 0);
   }
-  freshVisuals(v, world);
+  freshVisuals(v);
 }
 
 // The same ground again (same level and seed): put the fresh bake back with one drawImage
 // instead of baking, which stalls a Pi 4 for about a second.
-export function replayTerrain(v, world) {
+export function replayTerrain(v) {
   const { canvas, ctx } = v.terrain;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(v.pristine, 0, 0);
   v.terrain.hot = [];
-  freshVisuals(v, world);
+  freshVisuals(v);
 }
 
-function freshVisuals(v, world) {
-  v.world = world;
+function freshVisuals(v) {
   v.unitFx = new Map();
   v.trails = new WeakMap();
   v.cache = {};
@@ -85,8 +85,8 @@ function fit(v) {
   const oy = (c.height - H * s) / 2;
   // letterbox: the sky's top colour above the world, the deep liquid below it
   const g = v.ctx.createLinearGradient(0, 0, 0, c.height);
-  g.addColorStop(0, v.level.sky[0][1]);
-  g.addColorStop(Math.min(1, oy / c.height + 0.01), v.level.sky[0][1]);
+  g.addColorStop(0, skyTop(v.level));
+  g.addColorStop(Math.min(1, oy / c.height + 0.01), skyTop(v.level));
   g.addColorStop(Math.max(0, 1 - oy / c.height - 0.01), shade(v.level.liquid.color, -0.6));
   g.addColorStop(1, shade(v.level.liquid.color, -0.6));
   v.fit = { css: key, s, ox: (c.width - W * s) / 2, oy, letterbox: g };
@@ -116,14 +116,14 @@ function camera(g, cam, fx) {
 }
 
 // Sky, parallax, terrain and liquid: everything a pixel level renders chunky.
-function backdrop(g, v, cam, fx, t) {
+function backdrop(g, v, world, cam, fx, t) {
   g.drawImage(v.sky, 0, 0);
-  drawAmbient(g, v.look, t, v.drift, v.world.wind, 'sky');
-  drawFlourishes(g, v, t, 'sky');
+  drawAmbient(g, v.look, t, v.drift, world.wind, 'sky');
+  drawFlourishes(g, v, world, t, 'sky');
   g.save();
   camera(g, cam, fx);
-  drawLayers(g, v.layers, cam, t, (i, x0, y0) => i === 0 && drawFlourishes(g, v, t, 'far', x0, y0));
-  drawFlourishes(g, v, t, 'mid');
+  drawLayers(g, v.layers, cam, t, (i, x0, y0) => i === 0 && drawFlourishes(g, v, world, t, 'far', x0, y0));
+  drawFlourishes(g, v, world, t, 'mid');
   drawTerrain(g, v.terrain, v.look, t);
   drawLiquid(g, v.level, v.look, t);
   g.restore();
@@ -147,20 +147,20 @@ export function drawFrame(v, world, fx, cam, t = 0) {
     const g = v.low.getContext('2d');
     g.setTransform(0.25, 0, 0, 0.25, 0, 0);
     g.imageSmoothingEnabled = false;
-    backdrop(g, v, cam, fx, t);
+    backdrop(g, v, world, cam, fx, t);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(v.low, 0, 0, W, H);
     ctx.imageSmoothingEnabled = true;
-  } else backdrop(ctx, v, cam, fx, t);
+  } else backdrop(ctx, v, world, cam, fx, t);
   ctx.save();
   camera(ctx, cam, fx);
   drawUnits(ctx, v, world, fx, t, dt);
   drawProjectiles(ctx, v, world, t);
   drawFx(ctx, fx, !!v.level.pixel);
   drawAmbient(ctx, v.look, t, v.drift, world.wind, 'front');
-  drawFlourishes(ctx, v, t, 'front');
+  drawFlourishes(ctx, v, world, t, 'front');
   ctx.restore();
-  drawFlourishes(ctx, v, t, 'screen');
+  drawFlourishes(ctx, v, world, t, 'screen');
   drawFlashTint(ctx, fx);
   ctx.restore();
   if (v.showHud) drawHud(ctx, world, v.hud, t);

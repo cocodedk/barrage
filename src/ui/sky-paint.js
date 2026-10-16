@@ -1,6 +1,10 @@
 // Painting helpers shared by the sky, its bodies and the animated flourishes.
 import { W, makeCanvas, mix, shade, hash, noise2, glow, soft } from './sprites.js';
 
+// The level's sky colour at the very top, and at the horizon.
+export const skyTop = (level) => level.sky[0][1];
+export const skyHaze = (level) => level.sky[level.sky.length - 1][1];
+
 // Colour of the sky gradient at u (0 top .. 1 bottom).
 export function sampleSky(stops, u) {
   for (let i = 1; i < stops.length; i++) {

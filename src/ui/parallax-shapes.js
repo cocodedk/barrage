@@ -2,6 +2,7 @@
 // the layer's band 0..h tall plus a skirt below) in the layer colour; `rng` is seeded.
 import { glow } from './sprites.js';
 import { spikes } from './parallax-spikes.js';
+import { pick } from '../core/rng.js';
 
 export const SKIRT = 520; // below the band, down past the world floor
 
@@ -78,7 +79,7 @@ function skyline(g, w, h, rng, L, out) {
       out.lights.push({ x: x + bw / 2, y: top - 42 });
     }
     const colors = ['#ffe9a8', '#7ff6ff', '#ff7ad8'];
-    const wc = colors[Math.floor(rng() * 3)];
+    const wc = pick(rng, colors);
     for (let wy = top + 12; wy < h; wy += 18) {
       for (let wx = x + 8; wx < x + bw - 14; wx += 14) {
         if (rng() > 0.42) continue;

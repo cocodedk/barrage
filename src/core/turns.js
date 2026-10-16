@@ -1,7 +1,8 @@
 // Turn flow: aim -> (fire) -> flying/retreat -> settling -> next team; wind, rotation, winner.
-import { WEAPONS, weaponById, fireWeapon } from './weapons.js';
+import { WEAPONS, weaponById, fireWeapon, inFlight } from './weapons.js';
 import { unitAtRest, AIM_LIMIT } from './units.js';
 import { clamp } from './math.js';
+import { between } from './rng.js';
 
 export const TURN_TIME = 30;
 export const RETREAT_TIME = 3;
@@ -23,22 +24,22 @@ export function newTurnState() {
 // keeps the weapon it last held (a team's first turn starts on the bazooka), so nobody inherits
 // the other side's airstrike.
 export function beginTurn(world, teamId, rng) {
-  world.teams[world.turn.team].weapon = world.turn.weapon;
   const team = world.teams[teamId];
   const n = team.units.length;
   let idx = team.last;
   do idx = (idx + 1) % n;
   while (!team.units[idx].alive);
   team.last = idx;
-  world.wind = (rng() * 2 - 1) * world.level.windMax;
+  world.wind = between(rng, -1, 1) * world.level.windMax;
   Object.assign(world.turn, newTurnState(), { team: teamId, unit: idx });
-  setWeapon(world, team.weapon || 'bazooka');
+  setWeapon(world, team.weapon);
   world.events.push({ type: 'turn', team: teamId, unit: idx, wind: world.wind });
 }
 
-// Arm the active soldier with weapon `id`, with its shots for the turn.
+// Arm the active soldier with weapon `id`, with its shots for the turn; his team keeps it.
 export function setWeapon(world, id) {
   world.turn.weapon = id;
+  world.teams[world.turn.team].weapon = id;
   world.turn.shotsLeft = weaponById(id).shots;
 }
 
@@ -50,7 +51,7 @@ function chooseWeapon(world, pick) {
 function fire(world, u, intents) {
   const turn = world.turn;
   const w = weaponById(turn.weapon);
-  if (w.id === 'airstrike' && !(intents.target && Number.isFinite(intents.target.x))) return;
+  if (w.target && !(intents.target && Number.isFinite(intents.target.x))) return;
   fireWeapon(world, u, w, Math.max(MIN_POWER, turn.power), intents.target);
   turn.charging = false;
   turn.shotsFired += 1;
@@ -85,9 +86,9 @@ export function applyIntents(world, intents, dt) {
   return move;
 }
 
-function allAtRest(world) {
-  return world.teams.every((t) => t.units.every(unitAtRest));
-}
+// Nothing in the air and every soldier standing still.
+export const worldAtRest = (world) =>
+  world.projectiles.length === 0 && world.teams.every((t) => t.units.every(unitAtRest));
 
 function finishMatchOrTurn(world, rng) {
   const alive = world.teams.map((t) => t.units.some((u) => u.alive));
@@ -121,10 +122,9 @@ export function stepTurn(world, dt, rng) {
   } else if (phase === 'flying' || phase === 'retreat') {
     turn.timeLeft -= dt;
     if (turn.timeLeft <= 0) settle(world);
-    else turn.phase = world.projectiles.some((p) => p.kind !== 'dynamite') ? 'flying' : 'retreat';
+    else turn.phase = world.projectiles.some(inFlight) ? 'flying' : 'retreat';
   } else {
     turn.settled += dt;
-    const still = world.projectiles.length === 0 && allAtRest(world);
-    if (still || turn.settled >= SETTLE_CAP) finishMatchOrTurn(world, rng);
+    if (worldAtRest(world) || turn.settled >= SETTLE_CAP) finishMatchOrTurn(world, rng);
   }
 }

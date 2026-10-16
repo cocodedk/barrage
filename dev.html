@@ -27,7 +27,8 @@ import { LEVELS } from './src/core/levels.js';
 import { createWorld, stepWorld } from './src/core/world.js';
 import { makeRng } from './src/core/rng.js';
 import { explode } from './src/core/explode.js';
-import { weaponById, BOMBLET, makeProjectile } from './src/core/weapons.js';
+import { weaponById, BOMBLET, makeProjectile, inFlight } from './src/core/weapons.js';
+import { setWeapon } from './src/core/turns.js';
 import { createFx, stepFx } from './src/fx/fx.js';
 import { applyEvent } from './src/fx/react.js';
 import { createCamera, stepCamera } from './src/fx/camera.js';
@@ -79,7 +80,7 @@ function single(level) {
   window.bench = s;
   if (q.has('strike')) {
     const [x, y] = q.get('strike').split(',').map(Number);
-    s.world.turn.weapon = 'airstrike';
+    setWeapon(s.world, 'airstrike');
     s.view.cursor = { x, y };
   }
   const frame = () => {
@@ -94,7 +95,7 @@ function single(level) {
     stepWorld(s.world, DT * s.fx.timeScale, {}, s.rng);
     drain(s);
     stepFx(s.fx, DT, s.world.terrain);
-    const focus = s.world.projectiles.find((p) => p.kind !== 'dynamite');
+    const focus = s.world.projectiles.find(inFlight);
     stepCamera(s.cam, focus || null, DT);
     drawFrame(s.view, s.world, s.fx, s.cam, t);
     requestAnimationFrame(frame);

@@ -4,6 +4,7 @@
 // the world) and 'screen' (full-screen tints after the camera).
 import { W, H, rgba, shade, hash, glow, soft, star, wrap } from './sprites.js';
 import { SKY } from './flourish-sky.js';
+import { skyHaze } from './sky-paint.js';
 
 
 function rays(ctx, v, t) {
@@ -34,7 +35,7 @@ function rays(ctx, v, t) {
 }
 
 function mist(ctx, v, t) {
-  const color = shade(v.level.sky[v.level.sky.length - 1][1], 0.35);
+  const color = shade(skyHaze(v.level), 0.35);
   const sprite = soft(color);
   for (let i = 0; i < 9; i++) {
     const w = 500 + hash(i + 210) * 400;
@@ -91,7 +92,7 @@ function fish(ctx, v, t) {
 }
 
 // Volcano: the far peak glows, spits lava and breathes a plume.
-function eruption(ctx, v, t, x0, y0) {
+function eruption(ctx, v, t, terrain, x0, y0) {
   const p = v.layers[0].peak;
   if (!p) return;
   const px = x0 + p.x;
@@ -119,8 +120,7 @@ function eruption(ctx, v, t, x0, y0) {
 }
 
 // Glacier: sun glints winking on the ice, wherever the ice still stands.
-function glints(ctx, v, t) {
-  const terr = v.world.terrain;
+function glints(ctx, v, t, terr) {
   v.cache.glints ??= Array.from({ length: 18 }, (_, i) => {
     const x = 40 + hash(i + 250) * (W - 80);
     return { x, y: terr.surfaceY(x) + 2 };
@@ -151,9 +151,9 @@ const WORLD = {
 
 export const FLOURISH_NAMES = [...Object.keys(WORLD), ...Object.keys(SKY)];
 
-export function drawFlourishes(ctx, v, t, phase, x0, y0) {
+export function drawFlourishes(ctx, v, world, t, phase, x0, y0) {
   for (const name of v.look.flourish) {
     const f = (WORLD[name] || SKY[name])?.[phase];
-    if (f) f(ctx, v, t, x0, y0);
+    if (f) f(ctx, v, t, world.terrain, x0, y0);
   }
 }

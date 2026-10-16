@@ -2,6 +2,7 @@
 // identity in a WeakMap, so it vanishes with the shell) and a sprite per kind. Trail points
 // age by time, so a shell that comes to rest loses its tail.
 import { INK, hash, glow } from './sprites.js';
+import { inFlight } from '../core/weapons.js';
 
 const TRAIL = 22;
 const TRAIL_LIFE = 0.45; // s a trail point stays visible
@@ -144,7 +145,7 @@ export function drawProjectiles(ctx, v, world, t) {
   ctx.globalCompositeOperation = 'lighter';
   for (const p of world.projectiles) {
     const h = remember(v, p, t);
-    if (p.kind !== 'dynamite') trail(ctx, h, COLORS[p.kind] || '#ffffff', t);
+    if (inFlight(p)) trail(ctx, h, COLORS[p.kind] || '#ffffff', t);
   }
   for (const p of world.projectiles) {
     ctx.globalAlpha = 0.55;

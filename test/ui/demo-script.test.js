@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { LEVELS } from '../../src/core/levels.js';
 import { createWorld, stepWorld } from '../../src/core/world.js';
 import { makeRng } from '../../src/core/rng.js';
+import { setWeapon } from '../../src/core/turns.js';
 import { STEPS } from '../../src/ui/demo/script.js';
 import { createRunner, startStep, runnerIntents, afterTick } from '../../src/ui/demo/runner.js';
 import { DEMO_SEED, hero, arrange, place } from '../../src/ui/demo/scene.js';
@@ -16,7 +17,7 @@ const DID_IT = {
   jump: (w) => [{ type: 'jump', unit: hero(w).id }],
   aim: (w) => { hero(w).aim += 0.4; return []; },
   fire: () => [{ type: 'fire', weapon: 'bazooka', x: 0, y: 0 }],
-  weapons: (w) => { w.turn.weapon = 'grenade'; return []; },
+  weapons: (w) => { setWeapon(w, 'grenade'); return []; },
   grenade: () => [{ type: 'fire', weapon: 'grenade', x: 0, y: 0 }],
   airstrike: () => [{ type: 'fire', weapon: 'airstrike', x: 0, y: 0 }],
 };

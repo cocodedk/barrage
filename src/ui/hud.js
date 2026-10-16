@@ -2,6 +2,7 @@
 // team HP panels, turn timer, wind, weapon bar (keys 1-6), power meter, turn banner.
 import { W, H, INK, rgba, shade, roundRect } from './sprites.js';
 import { WEAPONS, weaponById } from '../core/weapons.js';
+import { MAX_HP } from '../core/units.js';
 import { drawIcon } from './hud-icons.js';
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -38,7 +39,7 @@ function teamPanel(ctx, team, active, right) {
   const w = 470;
   const x = right ? W - 32 - w : 32;
   const hp = team.units.reduce((s, u) => s + (u.alive ? u.hp : 0), 0);
-  const max = team.units.length * 100;
+  const max = team.units.length * MAX_HP;
   panel(ctx, x, 26, w, 92, active ? rgba(team.color, 0.95) : undefined);
   const side = right ? 'right' : 'left';
   const edge = right ? x + w - 22 : x + 22;

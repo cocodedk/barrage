@@ -27,6 +27,7 @@ export function createWorld(level, mode, rng) {
     color: TEAM_COLORS[id],
     ai: mode === 'campaign' && id === 1 ? { skill: level.aiSkill } : null,
     last: -1, // index of the soldier that played last, for rotation
+    weapon: 'bazooka', // the weapon the team last held
     units: spots
       .slice(id * UNITS_PER_TEAM, (id + 1) * UNITS_PER_TEAM)
       .map((s, i) => createUnit(id * UNITS_PER_TEAM + i, id, s.x, s.y, s.x < terrain.w / 2 ? 1 : -1)),

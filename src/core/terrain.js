@@ -15,6 +15,27 @@ export class Terrain {
     return this.mask[iy * this.w + ix] === 1;
   }
 
+  // Sum of the offsets from (x, y) to every air pixel within `reach` (by solid()'s rules): a
+  // vector pointing from the mask out into the air, zero when the box is all air or all solid.
+  airVector(x, y, reach) {
+    const { w, h, mask } = this;
+    let nx = 0;
+    let ny = 0;
+    for (let dy = -reach; dy <= reach; dy++) {
+      const iy = Math.floor(y + dy);
+      if (iy >= h) continue;
+      const row = iy * w;
+      for (let dx = -reach; dx <= reach; dx++) {
+        const ix = Math.floor(x + dx);
+        if (iy < 0 || ix < 0 || ix >= w || mask[row + ix] !== 1) {
+          nx += dx;
+          ny += dy;
+        }
+      }
+    }
+    return { x: nx, y: ny };
+  }
+
   // Remove a disc of radius r (x, y and r may be fractional). Returns how many solid
   // pixels it removed.
   carve(x, y, r) {

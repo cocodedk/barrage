@@ -9,12 +9,13 @@ const JUMP_HEIGHT = 70; // px, kept under the safe fall height
 const SAFE_FALL = 80; // px of drop before it hurts
 const FALL_DAMAGE = 0.4; // hp per px beyond the safe height
 export const AIM_LIMIT = Math.PI / 2;
+export const MAX_HP = 100;
 const AT_REST = 5; // px/s under which a soldier counts as still
 const STEP_DOWN = 2; // px a walker follows the ground down per move
 
 export function createUnit(id, team, x, y, facing) {
   return {
-    id, team, x, y, vx: 0, vy: 0, hp: 100, alive: true, facing, aim: 0.5, onGround: true, peakY: y,
+    id, team, x, y, vx: 0, vy: 0, hp: MAX_HP, alive: true, facing, aim: 0.5, onGround: true, peakY: y,
   };
 }
 
