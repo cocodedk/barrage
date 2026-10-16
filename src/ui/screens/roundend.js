@@ -1,0 +1,48 @@
+// Round end: who won, a burst of confetti for a victory, and what next.
+import { h, button, navigate, shell } from './dom.js';
+import { LEVELS } from '../../core/levels.js';
+
+const CONFETTI = ['#ffd24a', '#ff5a8a', '#4ad8ff', '#7dff6a', '#ffffff', '#ff9a2e', '#b78bff'];
+
+function confetti(n = 70) {
+  const box = h('div', 'confetti');
+  for (let i = 0; i < n; i++) {
+    const p = h('i');
+    const k = (i * 0.618034) % 1; // golden-ratio spread: even without randomness
+    p.style.cssText = `left:${(k * 100).toFixed(1)}%;background:${CONFETTI[i % CONFETTI.length]};` +
+      `animation-delay:${((i * 0.37) % 1.6).toFixed(2)}s;animation-duration:${(2.6 + ((i * 0.53) % 1.8)).toFixed(2)}s;` +
+      `--drift:${(((i * 37) % 21) - 10) * 9}px;--spin:${360 + ((i * 97) % 540)}deg`;
+    box.append(p);
+  }
+  return box;
+}
+
+// outcome: { mode, level, winner (team id | 'draw'), teams } ; act: { next, replay, levels, menu }
+export function roundEndScreen(o, act) {
+  const campaign = o.mode === 'campaign';
+  const draw = o.winner === 'draw';
+  const won = !draw && (campaign ? o.winner === 0 : true);
+  const last = o.level.id === LEVELS.length;
+  let title;
+  if (draw) title = 'Draw!';
+  else if (campaign) title = won ? (last ? 'Campaign complete!' : 'Victory!') : 'Defeat';
+  else title = `${o.teams[o.winner].name} wins!`;
+  const sub = draw ? 'Both teams fell in the same turn.'
+    : campaign && won ? (last ? 'All fifteen battlefields are yours.' : `Level ${o.level.id + 1} — ${LEVELS[o.level.id].name} unlocked`)
+      : campaign ? 'The computer holds the field. Try again?' : o.level.name;
+  const el = shell(`roundend dim ${won ? 'won' : 'lost'}`);
+  if (won) el.append(confetti());
+  const color = !draw && !campaign ? o.teams[o.winner].color : null;
+  const banner = h('div', 'banner', h('h2', 'banner-title', title), h('p', 'sub', sub));
+  if (color) {
+    banner.classList.add('team');
+    banner.style.setProperty('--team', color);
+  }
+  const items = [];
+  if (campaign && won && !last) items.push(button('Next level', act.next, 'btn btn-big'));
+  items.push(button(won || !campaign ? (campaign ? 'Replay' : 'Rematch') : 'Retry', act.replay, 'btn btn-big'));
+  if (!campaign) items.push(button('Pick level', act.levels, 'btn btn-big'));
+  items.push(button('Menu', act.menu, 'btn btn-big'));
+  el.append(banner, h('nav', 'menu menu-row', ...items));
+  return { el, focus: items[0], onKey: (code) => navigate(items, code) };
+}

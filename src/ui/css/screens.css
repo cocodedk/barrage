@@ -1,0 +1,104 @@
+/* Barrage screens: title logo, level cards, how to play, loading card, round end. */
+
+/* ---- title -------------------------------------------------------------- */
+.title { background: linear-gradient(180deg, rgba(5, 6, 12, 0.55) 0%, rgba(5, 6, 12, 0.1) 45%, rgba(5, 6, 12, 0.7) 100%); }
+.title-stack { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
+.logo { position: relative; font-weight: 900; font-size: 11rem; line-height: 1; letter-spacing: 0.08em;
+  animation: logo-in 0.9s cubic-bezier(0.2, 1.4, 0.3, 1) both, logo-float 5s ease-in-out 0.9s infinite; }
+.logo span { display: block; }
+.logo-text {
+  position: relative; background: linear-gradient(180deg, #fffbe6 0%, #ffe14a 38%, #ff8a1e 68%, #e5301a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 0.12rem rgba(90, 20, 0, 0.55);
+}
+.logo-glow {
+  position: absolute; inset: 0; color: #ff7a1a; filter: blur(1.6rem); opacity: 0.85;
+  animation: logo-pulse 2.4s ease-in-out infinite;
+}
+.logo-shine {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%);
+  background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: logo-shine 4.5s ease-in-out 1.2s infinite;
+}
+.tagline { margin: 0 0 1.4rem; font-size: 1.6rem; font-weight: 800; letter-spacing: 0.22em;
+  text-transform: uppercase; color: rgba(255, 236, 200, 0.85); text-shadow: 0 0.2rem 0.8rem #000; }
+.title .hint { position: absolute; bottom: 2.4rem; }
+@keyframes logo-in { from { opacity: 0; transform: scale(1.6); } to { opacity: 1; transform: none; } }
+@keyframes logo-float { 50% { transform: translateY(-0.6rem); } }
+@keyframes logo-pulse { 50% { opacity: 0.45; } }
+@keyframes logo-shine { 0% { background-position: 120% 0; } 60%, 100% { background-position: -20% 0; } }
+
+/* ---- level select ------------------------------------------------------- */
+.levels { background: radial-gradient(ellipse at top, rgba(18, 22, 40, 0.82), rgba(5, 6, 12, 0.94)); gap: 0.9rem; padding: 1.6rem 3rem; }
+.levels .screen-title { font-size: 3.4rem; }
+.level-grid { display: grid; grid-template-columns: repeat(5, 14rem); gap: 1.1rem 1.3rem; margin: 0.4rem 0; }
+.level-card {
+  font: inherit; color: inherit; padding: 0; cursor: pointer; text-align: left; overflow: hidden;
+  background: var(--glass-hi); border: 0.15rem solid var(--line); border-radius: 1rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.level-card:focus { border-color: var(--edge, var(--focus)); box-shadow: 0 0 0 0.3rem rgba(255, 210, 74, 0.5), 0 0 2rem rgba(255, 150, 40, 0.4); }
+.level-art { position: relative; aspect-ratio: 16 / 9; }
+.level-art img { display: block; width: 100%; height: 100%; }
+.level-meta { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.7rem 0.6rem; min-height: 2.6rem; }
+.level-num { flex: none; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  font-weight: 900; font-size: 1.2rem; background: var(--edge, #fff); color: #10131c; }
+.level-name { font-weight: 800; font-size: 1.15rem; line-height: 1.1; }
+.level-done { position: absolute; right: 0.5rem; top: 0.4rem; font-weight: 900; font-size: 1.5rem;
+  color: #7dff6a; text-shadow: 0 0.1rem 0.4rem #000; }
+.level-card.locked .level-art img { filter: saturate(0.4) brightness(0.55); }
+.level-card.locked .level-meta { opacity: 0.55; }
+.level-card.locked .level-num { background: rgba(255, 255, 255, 0.4); }
+.lock-wrap { position: absolute; inset: 0; display: grid; place-items: center; }
+.lock { width: 3.4rem; height: 3.4rem; fill: rgba(255, 255, 255, 0.9); stroke: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 0.2rem 0.5rem rgba(0, 0, 0, 0.7)); }
+.shake { animation: shake 0.4s ease; }
+@keyframes shake { 20%, 60% { translate: -0.5rem 0; } 40%, 80% { translate: 0.5rem 0; } }
+
+/* ---- how to play -------------------------------------------------------- */
+.howto { background: rgba(5, 6, 12, 0.9); }
+.lead { max-width: 70rem; margin: 0; font-size: 1.6rem; font-weight: 600; line-height: 1.45; text-align: center; color: var(--ink-dim); }
+.howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; max-width: 86rem; }
+.howto h3 { margin: 0 0 0.8rem; font-size: 1.9rem; font-weight: 900; color: var(--gold); }
+.howto dl { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem 1.4rem; margin: 0; font-size: 1.35rem; }
+.howto dt { font-weight: 900; white-space: nowrap; }
+.howto .keys dt { color: #ffe9b0; }
+.howto dd { margin: 0; color: var(--ink-dim); font-weight: 600; }
+
+/* ---- loading ------------------------------------------------------------ */
+.loading { transition-duration: 0.25s; }
+.loading::before { content: ""; position: absolute; inset: 0; background: rgba(5, 6, 12, 0.45); }
+.loading-card { position: relative; text-align: center; animation: rise 0.5s cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+.loading-kicker { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); }
+.loading-name { margin: 0.4rem 0 1.6rem; font-size: 7rem; font-weight: 900; line-height: 1;
+  text-shadow: 0 0.4rem 2.4rem rgba(0, 0, 0, 0.55); }
+.loading-bar { width: 24rem; height: 0.5rem; margin: 0 auto; border-radius: 1rem; overflow: hidden; background: rgba(255, 255, 255, 0.2); }
+.loading-bar span { display: block; width: 40%; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--hot)); animation: sweep 0.9s ease-in-out infinite alternate; }
+@keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes rise { from { opacity: 0; transform: translateY(2rem) scale(0.96); } }
+
+/* ---- round end ---------------------------------------------------------- */
+.roundend { gap: 2.6rem; overflow: hidden; }
+.banner { --team: var(--gold); text-align: center; animation: slam 0.7s cubic-bezier(0.2, 1.5, 0.3, 1) both; }
+.banner-title { margin: 0 0 0.6rem; font-size: 8.5rem; font-weight: 900; line-height: 1; letter-spacing: 0.02em;
+  color: #fff; text-shadow: 0 0 2rem var(--team), 0 0.5rem 2rem rgba(0, 0, 0, 0.6); }
+.lost .banner-title { color: #ffb1a8; text-shadow: 0 0 2rem rgba(255, 60, 40, 0.6), 0 0.5rem 2rem rgba(0, 0, 0, 0.6); }
+.won .banner:not(.team) .banner-title { background: linear-gradient(180deg, #fffbe6, #ffe14a 45%, #ff8a1e);
+  -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none;
+  filter: drop-shadow(0 0 1.4rem rgba(255, 140, 30, 0.6)); }
+.banner .sub { font-size: 2rem; color: #fff; }
+.roundend .menu-row { animation: rise 0.5s 0.35s ease both; }
+@keyframes slam { from { opacity: 0; transform: scale(2.2); } }
+.confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti i { position: absolute; top: -2rem; width: 0.7rem; height: 1.2rem; border-radius: 0.15rem;
+  animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes fall {
+  from { transform: translate(0, 0) rotate(0); }
+  to { transform: translate(var(--drift), 60rem) rotate(var(--spin)); opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo, .logo-glow, .logo-shine, .confetti, .banner, .loading-bar span { animation: none; }
+}

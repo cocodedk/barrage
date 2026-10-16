@@ -1,0 +1,76 @@
+/* Barrage: page frame, the overlay stage, buttons and focus. Sizes are in rem, and 1 rem is
+   1/54 of the screen height (20 px at 1080p), so the menus read the same on a TV and a laptop. */
+:root {
+  --ink: #f4f6ff;
+  --ink-dim: rgba(244, 246, 255, 0.68);
+  --glass: rgba(8, 10, 18, 0.66);
+  --glass-hi: rgba(22, 26, 42, 0.86);
+  --line: rgba(255, 255, 255, 0.16);
+  --hot: #ff6a1a;
+  --gold: #ffd24a;
+  --focus: #ffd24a;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+html { font-size: min(calc(100vh / 54), calc(100vw / 96)); }
+html, body { margin: 0; height: 100%; background: #05060b; overflow: hidden; }
+body { font-family: var(--font); color: var(--ink); -webkit-font-smoothing: antialiased; }
+canvas#game { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+
+#ui { position: fixed; inset: 0; pointer-events: none; }
+.screen {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 1.6rem; padding: 3rem; box-sizing: border-box;
+  pointer-events: auto; opacity: 0; transform: scale(1.03);
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen.show { opacity: 1; transform: none; }
+.screen.leaving { pointer-events: none; transform: scale(0.98); }
+.screen.dim { background: radial-gradient(ellipse at center, rgba(5, 6, 12, 0.72), rgba(5, 6, 12, 0.92)); }
+.screen-title {
+  margin: 0; font-size: 4.2rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;
+  text-shadow: 0 0.3rem 1.4rem rgba(0, 0, 0, 0.6);
+}
+.sub { margin: 0; font-size: 1.6rem; font-weight: 700; color: var(--ink-dim); text-align: center; }
+.hint { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--ink-dim); letter-spacing: 0.06em; }
+.row { display: flex; align-items: center; gap: 2rem; }
+
+.menu { display: flex; flex-direction: column; gap: 1rem; min-width: 26rem; }
+.menu-row { flex-direction: row; flex-wrap: wrap; justify-content: center; min-width: 0; }
+
+.btn {
+  font: 800 1.6rem var(--font); color: var(--ink); padding: 0.9rem 2.2rem; cursor: pointer;
+  background: var(--glass); border: 0.12rem solid var(--line); border-radius: 1rem;
+  box-shadow: 0 0.4rem 1.4rem rgba(0, 0, 0, 0.35); outline: none;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-big { font-size: 2.1rem; padding: 1.1rem 3rem; letter-spacing: 0.03em; }
+.btn:focus, .level-card:focus {
+  outline: none; border-color: var(--focus); transform: scale(1.05);
+  box-shadow: 0 0 0 0.3rem rgba(255, 210, 74, 0.35), 0 0 2.2rem rgba(255, 150, 40, 0.45);
+}
+.btn:focus { background: linear-gradient(180deg, rgba(255, 170, 60, 0.32), rgba(255, 106, 26, 0.22)), var(--glass-hi); }
+.btn:active { transform: scale(0.98); }
+
+.card-panel {
+  background: var(--glass); border: 0.12rem solid var(--line); border-radius: 1.2rem;
+  padding: 1.4rem 2rem; box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, 0.4);
+}
+
+.toast {
+  position: fixed; left: 50%; bottom: 9rem; transform: translate(-50%, 1rem); opacity: 0;
+  font: 900 1.6rem var(--font); padding: 0.8rem 1.8rem; border-radius: 1rem;
+  background: var(--glass-hi); border: 0.12rem solid var(--line); pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease; z-index: 5;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.debug {
+  position: fixed; left: 0.6rem; bottom: 0.6rem; z-index: 9; pointer-events: none;
+  font: 700 14px ui-monospace, monospace; color: #9effa0; background: rgba(0, 0, 0, 0.7);
+  padding: 4px 8px; border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .btn, .toast { transition: none; }
+}
