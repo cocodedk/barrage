@@ -32,7 +32,7 @@ export function roundEndScreen(o, act) {
   else if (campaign) title = won ? (last ? 'Campaign complete!' : 'Victory!') : 'Defeat';
   else title = `${o.teams[o.winner].name} wins!`;
   const sub = draw ? 'Both teams fell in the same turn.'
-    : campaign && won ? (last ? 'All fifteen battlefields are yours.' : `Level ${o.level.id + 1} — ${LEVELS[o.level.id].name} unlocked`)
+    : campaign && won ? (last ? `All ${LEVELS.length} battlefields are yours.` : `Level ${o.level.id + 1} — ${LEVELS[o.level.id].name} unlocked`)
       : campaign ? 'The computer holds the field. Try again?' : o.level.name;
   const el = shell(`roundend dim ${won ? 'won' : 'lost'}`);
   if (won) el.append(confetti());

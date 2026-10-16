@@ -7,7 +7,8 @@
 //   check(world, events, state) -> true once the player has done it (events: this tick's)
 import { aiIntents, THINK_TIME } from '../../core/ai-intents.js';
 import { DEG } from '../../core/math.js';
-import { setWeapon } from '../../core/turns.js';
+import { setWeapon, TURN_TIME } from '../../core/turns.js';
+import { WEAPONS, weaponById } from '../../core/weapons.js';
 import { hero, arrange, planShot, digPit, pitShove } from './scene.js';
 
 const STRONG_WIND = 150; // px/s^2: the HUD arrow turns red
@@ -52,7 +53,7 @@ export const STEPS = [
   },
   {
     id: 'turns', title: 'Taking turns', clock: true,
-    watch: 'One soldier acts per turn, with 30 seconds on the clock. The glowing panel shows whose turn it is.',
+    watch: `One soldier acts per turn, with ${TURN_TIME} seconds on the clock. The glowing panel shows whose turn it is.`,
     show: hold(5.5),
   },
   {
@@ -100,7 +101,7 @@ export const STEPS = [
   },
   {
     id: 'weapons', title: 'Weapons',
-    watch: 'Switch weapons with {Q} {E} or {1} – {6}.',
+    watch: `Switch weapons with {Q} {E} or {1} – {${WEAPONS.length}}.`,
     try: 'Pick the grenade: press {2}.',
     setup: (world) => setWeapon(world, 'bazooka'),
     show: keys(3.2, [[0.5, 0.85, { weapon: 'grenade', press: 'E' }], [1.3, 1.65, { weapon: 'cluster', press: 'E' }],
@@ -110,7 +111,7 @@ export const STEPS = [
   },
   {
     id: 'grenade', title: 'Grenade',
-    watch: 'Grenades bounce, ignore the wind and go off after 3 seconds.',
+    watch: `Grenades bounce, ignore the wind and go off after ${weaponById('grenade').fuse} seconds.`,
     try: 'Throw the grenade: hold {Space}, let go.',
     show: shot((world) => planShot(world, 'grenade'), '2'),
     ready: (world) => setWeapon(world, 'grenade'),
