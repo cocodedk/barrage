@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# commit-msg: Conventional Commits, `<type>(<optional scope>)!: <description>`.
+set -euo pipefail
+subject=$(head -n 1 "$1")
+case "$subject" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;   # git's own generated subjects
+esac
+if ! printf '%s\n' "$subject" | grep -qE '^(feat|fix|chore|docs|style|refactor|test|ci|build|perf|revert)(\([^)]+\))?!?: .+'; then
+  echo "commit-msg: subject must follow Conventional Commits" >&2
+  echo "  got:     $subject" >&2
+  echo "  example: feat(ui): add a pause menu" >&2
+  echo "  types:   feat fix chore docs style refactor test ci build perf revert" >&2
+  exit 1
+fi

@@ -1,2 +1,5 @@
 node_modules/
 .superpowers/
+.playwright-mcp/
+.mcp.json
+.zvec-grep/

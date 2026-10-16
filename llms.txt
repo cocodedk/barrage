@@ -1,0 +1,20 @@
+# Barrage
+
+> Barrage is a free, Worms-lite artillery game that runs in the browser: two teams of three soldiers trade bazooka rockets, grenades, cluster bombs, airstrikes, shotgun blasts and dynamite across destructible terrain.
+
+It has 15 levels, each with its own look (from Green Meadow to the Ember Sky Finale), a campaign against a computer opponent, two-player hot-seat on one keyboard, and a "How to play" demo that shows each move and then lets the player try it. It is plain HTML, CSS and JavaScript ES modules with no dependencies, no build step and no network requests at runtime. Made by Babak Bandpey at Cocode, released under Apache-2.0.
+
+## Play
+
+- [Barrage](https://barrage.cocode.dk/): the game itself; keyboard controls, mouse optional
+
+## Source
+
+- [Repository](https://github.com/cocodedk/barrage): source code, issues and releases
+- [README](https://github.com/cocodedk/barrage/blob/main/README.md): features, controls, weapons, running locally, tests and project layout
+- [Contributing](https://github.com/cocodedk/barrage/blob/main/CONTRIBUTING.md): setup, git hooks and house rules
+
+## Optional
+
+- [Security policy](https://github.com/cocodedk/barrage/blob/main/SECURITY.md): how to report a vulnerability
+- [Cocode](https://cocode.dk): the author's company

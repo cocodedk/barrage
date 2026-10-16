@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      - name: Tests
+        run: node --test
+
+      - name: Every code file stays under 200 lines
+        run: |
+          status=0
+          for f in $(git ls-files src test index.html dev.html og.html); do
+            n=$(wc -l < "$f")
+            if [ "$n" -ge 200 ]; then echo "::error file=$f::$n lines (limit is under 200)"; status=1; fi
+          done
+          exit $status

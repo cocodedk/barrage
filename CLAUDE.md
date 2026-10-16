@@ -11,6 +11,8 @@ design is `docs/superpowers/specs/2026-10-16-artillery-design.md` and the build 
 |---|---|
 | All tests | `node --test` |
 | Play locally | `python3 -m http.server 8000`, then open http://localhost:8000/ |
+| Install git hooks (once per clone) | `./scripts/install-hooks.sh` |
+| Re-render `og.png` | serve the repo, screenshot `og.html` at a 1200 x 630 viewport |
 
 ## Layout
 
@@ -21,7 +23,9 @@ design is `docs/superpowers/specs/2026-10-16-artillery-design.md` and the build 
 | `src/ui/` | Canvas drawing, screens, input, audio, storage. | yes |
 | `src/main.js` | Boot, game loop (fixed-step logic, rAF render), screen routing. | yes |
 | `test/` | `node:test` suites, named `*.test.js`, mirroring `src/core` and `src/fx`. | no |
-| `index.html` | One full-window canvas that loads `src/main.js`. | — |
+| `index.html` | One full-window canvas that loads `src/main.js`. SEO tags in `<head>` only. | — |
+| `CNAME`, `.nojekyll`, `robots.txt`, `sitemap.xml`, `favicon.svg`, `og.png`, `og.html`, `llms.txt` | GitHub Pages from the `main` root at https://barrage.cocode.dk. | — |
+| `.githooks/`, `.github/` | Hooks (tests, Conventional Commits, owner-locked push) and CI (`node --test`, 200-line check). | — |
 
 ## House rules
 

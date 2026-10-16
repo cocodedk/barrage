@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# pre-push: (1) only push to github.com/cocodedk/..., (2) never force-push or delete a protected
+# branch. Bypass once, deliberately, with: git push --no-verify
+set -euo pipefail
+
+OWNER=cocodedk
+remote_url="${2:-}"
+case "$remote_url" in
+  "https://github.com/$OWNER/"*|"git@github.com:$OWNER/"*|"ssh://git@github.com/$OWNER/"*) ;;
+  "git@github.com-$OWNER:$OWNER/"*) ;;   # the SSH host alias for this account
+  *)
+    echo "pre-push: refusing, push URL is not under github.com/$OWNER" >&2
+    echo "  remote: ${1:-?}" >&2
+    echo "  url:    $remote_url" >&2
+    exit 1
+    ;;
+esac
+
+PROTECTED_RE='^refs/heads/(main|master|trunk|production|prod|release)$'
+ZERO='0000000000000000000000000000000000000000'
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ "$remote_ref" =~ $PROTECTED_RE ]] || continue
+  branch="${BASH_REMATCH[1]}"
+
+  if [[ "$local_sha" == "$ZERO" ]]; then
+    echo "pre-push: blocked deletion of protected branch '$branch'" >&2
+    echo "          bypass: git push --no-verify" >&2
+    exit 1
+  fi
+
+  if [[ "$remote_sha" != "$ZERO" ]] && \
+     ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+    echo "pre-push: blocked non-fast-forward push to protected branch '$branch'" >&2
+    echo "          bypass: git push --no-verify" >&2
+    exit 1
+  fi
+done
+
+exit 0
