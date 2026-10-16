@@ -10,6 +10,7 @@ import { DEG } from '../../core/math.js';
 import { setWeapon, TURN_TIME } from '../../core/turns.js';
 import { WEAPONS, weaponById } from '../../core/weapons.js';
 import { hero, arrange, planShot, digPit, pitShove } from './scene.js';
+import { markerStart } from '../controls.js';
 
 const STRONG_WIND = 150; // px/s^2: the HUD arrow turns red
 const hold = (secs, intents = {}) => (t) => (t < secs ? intents : null);
@@ -35,7 +36,7 @@ const shot = (plan, press) => (t, world, s) => {
 function airstrike(t, world, s) {
   if (world.turn.shotsFired > 0) return null;
   const u = hero(world);
-  s.from ??= u.x + u.facing * 320;
+  s.from ??= markerStart(u);
   s.to ??= world.teams[1].units.find((v) => v.alive && Math.abs(v.x - u.x) > 200)?.x ?? s.from;
   if (t < 0.5) return {};
   if (t < 0.9) return { weapon: 'airstrike', press: '4' };

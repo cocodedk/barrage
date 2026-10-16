@@ -14,6 +14,7 @@ const KEYS = {
 };
 export const DIGITS = WEAPONS.map((_, i) => `Digit${i + 1}`);
 const clampX = (x) => clamp(x, 20, W - 20); // the marker stays clear of the world's edges
+export const markerStart = (u) => clampX(u.x + u.facing * 320);
 
 // armed: a fire press began during this aim phase (so a held key never fires into a new turn).
 export const createControls = () => ({ armed: false, markerX: null });
@@ -69,7 +70,7 @@ export function humanIntents(c, input, world, view, cam, dt) {
   const at = m.seen && (strike || m.moved) ? toWorld(view, cam, m.x, m.y) : null; // only read when used
 
   if (strike) {
-    if (c.markerX == null) c.markerX = clampX(u.x + u.facing * 320);
+    if (c.markerX == null) c.markerX = markerStart(u);
     if (m.moved && at) c.markerX = clampX(at.x);
     c.markerX = clampX(c.markerX + ((held('right') ? 1 : 0) - (held('left') ? 1 : 0)) * MARKER_SPEED * dt);
     const y = at && Math.abs(at.x - c.markerX) < 1 ? at.y : world.terrain.surfaceY(Math.round(c.markerX));

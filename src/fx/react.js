@@ -2,6 +2,7 @@
 import { addParticle } from './particles.js';
 import { addShake, startSlowMo } from './fx.js';
 import { between, pick } from '../core/rng.js';
+import { bodyCentre } from '../core/explode.js';
 
 const FALLBACK_FILL = ['#7b5233', '#3b2515'];
 const FALLBACK_LIQUID = '#2a8fd6';
@@ -65,10 +66,11 @@ function death(fx, ev, rng, level) {
   if (ev.decisive) startSlowMo(fx); // the kill that decides the match, while it still flies
   const drowned = level?.liquid && ev.y >= level.liquid.y - GRAVE_LIQUID_MARGIN;
   if (!drowned) fx.graves.push({ x: ev.x, y: ev.y, unit: ev.unit });
-  for (let i = 0; i < 24; i++) spark(fx, rng, ev.x, ev.y - 10, 260);
+  const c = bodyCentre(ev);
+  for (let i = 0; i < 24; i++) spark(fx, rng, c.x, c.y, 260);
   for (let i = 0; i < 6; i++) {
     addParticle(fx, {
-      x: ev.x, y: ev.y - 10, vx: between(rng, -60, 60), vy: between(rng, -200, -80),
+      x: c.x, y: c.y, vx: between(rng, -60, 60), vy: between(rng, -200, -80),
       life: between(rng, 1, 1.8), size: 2.5, grow: -1, color: '#ffb14a', kind: 'ember',
       gravity: 200, drag: 0.8, additive: true,
     });
