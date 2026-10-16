@@ -4,6 +4,7 @@ import { stepProjectile } from './physics.js';
 import { makeProjectile, muzzle, aimDir, MAX_SPEED } from './weapons.js';
 import { REACH, blastDamage } from './explode.js';
 import { DEG } from './math.js';
+import { TICK } from './world.js';
 
 const MAX_SIM = 6; // s; a bouncer can return null for ever
 const SELF_WEIGHT = 1.5; // friendly fire hurts more than enemy damage helps
@@ -95,7 +96,7 @@ export function bestShot(sw, w, ctx, org, facing, fast = false) {
     const g = {
       a0: Math.max(-20, best.deg - spanA), a1: Math.min(90, best.deg + spanA), aStep,
       p0: Math.max(0.1, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep,
-      dt: pass === passes - 1 ? 1 / 60 : 1 / 30,
+      dt: pass === passes - 1 ? TICK : 1 / 30,
     };
     best = sweep(sw, w, ctx, org, facing, g);
     spanA = aStep;

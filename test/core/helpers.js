@@ -1,9 +1,9 @@
 // Shared test fixtures: a flat world with known soldiers, and a stepping loop.
 import { LEVELS } from '../../src/core/levels.js';
 import { makeRng } from '../../src/core/rng.js';
-import { createWorld, stepWorld } from '../../src/core/world.js';
+import { createWorld, stepWorld, TICK } from '../../src/core/world.js';
 
-export const DT = 1 / 60;
+export const DT = TICK;
 export const GROUND = 800; // first solid row of the flat world
 
 export const hero = (world) => world.teams[0].units[0];

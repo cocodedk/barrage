@@ -1,7 +1,7 @@
 // One match: the world, its renderer and effects, and the fixed-step logic that drives it.
 // Logic runs in 1/60 s ticks from an accumulator; each tick's dt is scaled by fx.timeScale
 // (slow motion). Events drain every tick into fx, audio and the terrain canvas.
-import { createWorld, stepWorld } from '../core/world.js';
+import { createWorld, stepWorld, TICK } from '../core/world.js';
 import { endMatch } from '../core/turns.js';
 import { aiPlan, aiIntents } from '../core/ai.js';
 import { inFlight } from '../core/weapons.js';
@@ -15,7 +15,6 @@ import { createControls, humanIntents, resetControls } from './controls.js';
 import { endTick } from './input.js';
 import { unlockLevel } from './storage.js';
 
-export const STEP = 1 / 60;
 const MAX_STEPS = 6; // per frame; beyond this the game slows instead of spiralling
 const ATTRACT_SKILL = 0.75;
 
@@ -102,9 +101,9 @@ function tick(m, input, dt) {
 export function stepMatch(m, realDt, input) {
   m.acc += realDt;
   let n = 0;
-  while (m.acc >= STEP && n < MAX_STEPS) {
-    tick(m, input, STEP * m.fx.timeScale);
-    m.acc -= STEP;
+  while (m.acc >= TICK && n < MAX_STEPS) {
+    tick(m, input, TICK * m.fx.timeScale);
+    m.acc -= TICK;
     n++;
   }
   if (n === MAX_STEPS) m.acc = 0;

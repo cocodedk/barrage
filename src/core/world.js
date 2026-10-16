@@ -33,12 +33,14 @@ export function createWorld(level, mode, rng) {
       .map((s, i) => createUnit(id * UNITS_PER_TEAM + i, id, s.x, s.y, s.x < terrain.w / 2 ? 1 : -1)),
   }));
   const world = {
-    level, mode, terrain, gravity: level.gravity, wind: 0, liquidY: level.liquid.y,
+    level, terrain, gravity: level.gravity, wind: 0, liquidY: level.liquid.y,
     teams, projectiles: [], events: [], turn: newTurnState(), winner: null,
   };
   beginTurn(world, 0, rng);
   return world;
 }
+
+export const TICK = 1 / 60; // s per logic step; the AI's final sweep simulates at this rate too
 
 // One fixed tick. `intents` drive the active soldier only (the AI supplies the same shape).
 export function stepWorld(world, dt, intents, rng) {

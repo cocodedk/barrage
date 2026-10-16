@@ -24,7 +24,7 @@
 //   &t=4.2       start the clock there (lightning, meteors and the like are timed)
 //   &strike=900,500  select the airstrike and put its target cursor there
 import { LEVELS } from './src/core/levels.js';
-import { createWorld, stepWorld } from './src/core/world.js';
+import { createWorld, stepWorld, TICK } from './src/core/world.js';
 import { makeRng } from './src/core/rng.js';
 import { clamp } from './src/core/math.js';
 import { explode } from './src/core/explode.js';
@@ -37,7 +37,7 @@ import { createView, drawFrame } from './src/ui/view.js';
 
 const q = new URLSearchParams(location.search);
 const seed = Number(q.get('seed') || 7);
-const DT = 1 / 60;
+const DT = TICK;
 
 function setup(level, canvas) {
   const rng = makeRng(seed);
