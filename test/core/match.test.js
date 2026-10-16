@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { makeRng } from '../../src/core/rng.js';
 import { stepWorld } from '../../src/core/world.js';
 import { SETTLE_CAP } from '../../src/core/turns.js';
-import { flatWorld, run, skipTurn, eventsOf, DT } from './helpers.js';
+import { flatWorld, run, shoot, skipTurn, eventsOf, DT, GROUND } from './helpers.js';
 
 const me = (w) => w.teams[0].units[0];
 const killTeam = (w, t) => w.teams[t].units.forEach((u) => (u.hp = 0));
@@ -98,4 +98,28 @@ test('stepWorld ignores intents that are not for the aim phase (settling)', () =
   w.turn.phase = 'settling';
   stepWorld(w, DT, { left: true, charge: true, release: true }, makeRng(1));
   assert.equal(eventsOf(w, 'fire').length, 0);
+});
+
+test('a soldier who kills himself with his own bazooka passes the turn to team 1', () => {
+  const w = flatWorld();
+  me(w).hp = 1;
+  me(w).aim = Math.PI / 2;
+  shoot(w, 'bazooka', 0.5);
+  run(w, 8);
+  assert.equal(me(w).alive, false);
+  assert.equal(w.turn.team, 1);
+  assert.equal(w.winner, null);
+});
+
+test('a soldier who walks into the liquid drowns and the turn passes to team 1', () => {
+  const w = flatWorld();
+  w.terrain.carve(150, GROUND, 60); // a pit to his left
+  w.terrain.carve(150, GROUND + 100, 120);
+  w.liquidY = GROUND + 40;
+  me(w).x = 260;
+  run(w, 6, { left: true });
+  assert.equal(me(w).alive, false);
+  assert.equal(eventsOf(w, 'splash').length, 1);
+  assert.equal(eventsOf(w, 'explosion').length, 0);
+  assert.equal(w.turn.team, 1);
 });

@@ -24,11 +24,10 @@ function push(unit, dx, dy, d, strength) {
   nx /= norm;
   ny /= norm;
   unit.vx += nx * strength;
+  if (unit.onGround && strength < MIN_KICK && ny * strength >= 0) return; // pressed into the ground
+  if (unit.onGround) unit.peakY = unit.y; // a fall is measured from where he left the ground
+  unit.onGround = false;
   unit.vy += ny * strength;
-  if (strength >= MIN_KICK || ny * strength < 0) {
-    if (unit.onGround) unit.peakY = unit.y; // a fall is measured from where he left the ground
-    unit.onGround = false;
-  }
 }
 
 // Soldiers at 0 hp die: a death event, then a small blast of their own.

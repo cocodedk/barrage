@@ -36,6 +36,7 @@ const grounded = (t, x, y) => t.solid(x, y + 1) || t.solid(x - 4, y + 1) || t.so
 function startFall(u) {
   u.onGround = false;
   u.peakY = u.y;
+  u.vy = 0;
 }
 
 // Move along the ground by dx, 1 px at a time: step up 1 px, otherwise stop at a wall.
@@ -117,11 +118,12 @@ export function stepUnit(world, u, dt, move = { dir: 0, jump: false }) {
   }
   if (u.onGround && !grounded(t, u.x, u.y)) startFall(u);
   if (u.onGround) {
+    u.vy = 0; // a downward shove into the ground leaves no vertical speed behind
     if (dir) u.facing = dir;
     if (u.alive && move.jump) {
+      startFall(u);
       u.vy = -Math.sqrt(2 * world.gravity * JUMP_HEIGHT);
       u.vx = dir * WALK_SPEED;
-      startFall(u);
       world.events.push({ type: 'jump', unit: u.id });
     } else if (dir) {
       const next = u.vx + dir * (200 + 1400 * grip) * dt;

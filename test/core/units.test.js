@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { explode } from '../../src/core/explode.js';
+import { unitAtRest } from '../../src/core/units.js';
 import { flatWorld, run, eventsOf, GROUND } from './helpers.js';
 
 const hero = (w) => w.teams[0].units[0];
@@ -171,4 +172,23 @@ test('being blasted into the air and landing is not a fall from where he last st
   run(w, 3);
   assert.equal(u.onGround, true);
   assert.equal(u.hp, hp);
+});
+
+test('a weak blast above a grounded soldier leaves no vertical speed and he is at rest', () => {
+  const w = flatWorld();
+  const u = hero(w);
+  explode(w, u.x, u.y - 40, 40, 50);
+  assert.equal(u.onGround, true);
+  run(w, 1 / 60);
+  assert.equal(u.vy, 0);
+  assert.equal(unitAtRest(u), true);
+});
+
+test('the turn is handed on well before the settle cap after such a blast', () => {
+  const w = flatWorld();
+  const u = hero(w);
+  w.turn.timeLeft = 0.01;
+  explode(w, u.x, u.y - 40, 40, 50);
+  run(w, 1);
+  assert.equal(w.turn.team, 1);
 });
