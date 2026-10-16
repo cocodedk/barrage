@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { explode } from '../../src/core/explode.js';
 import { unitAtRest } from '../../src/core/units.js';
 import { WORLD_W as W } from '../../src/core/terrain-gen.js';
-import { flatWorld, run, eventsOf, hero, GROUND } from './helpers.js';
+import { flatWorld, run, eventsOf, hero, GROUND, solidRect } from './helpers.js';
 
 // A ramp of `rise` px per px from x0 to x1, standing on the flat ground.
 function slope(world, x0, x1, rise) {
@@ -57,7 +57,7 @@ test('a 2:1 wall blocks', () => {
 
 test('a vertical wall stops him', () => {
   const w = flatWorld();
-  for (let y = 600; y < GROUND; y++) for (let x = 500; x < 520; x++) w.terrain.mask[y * W + x] = 1;
+  solidRect(w, 500, 520, 600, GROUND);
   hero(w).x = 450;
   run(w, 3, { right: true });
   assert.ok(hero(w).x < 500);

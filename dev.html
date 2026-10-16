@@ -63,7 +63,7 @@ function boom(s) {
   const y = w.terrain.surfaceY(x);
   if (y < w.liquidY) explode(w, x, y, 40 + (booms % 3) * 15, 30);
   const shells = ['bazooka', 'grenade', 'cluster', 'dynamite'].map(weaponById);
-  shells.push({ id: 'bomblet', r: BOMBLET.r, damage: BOMBLET.damage, fuse: null, restitution: 0, windy: false });
+  shells.push(BOMBLET);
   shells.forEach((k, i) => w.projectiles.push(makeProjectile(k, -1, 300 + i * 330, 200, 140 - i * 40, -260)));
   w.projectiles.push(makeProjectile(weaponById('airstrike'), -1, 1500 + (booms % 2) * 80, -20, 0, 300, { kind: 'missile' }));
   booms++;

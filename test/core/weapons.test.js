@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { WEAPONS, weaponById } from '../../src/core/weapons.js';
-import { flatWorld, run, shoot, eventsOf, DT, GROUND, hero } from './helpers.js';
+import { flatWorld, run, shoot, eventsOf, DT, GROUND, hero, solidRect } from './helpers.js';
 
 // Move the shooter's squad mates out of his line of fire.
 const clearLine = (w) => w.teams[0].units.slice(1).forEach((u, i) => (u.x = 100 + i * 50));
@@ -124,7 +124,7 @@ test('shotgun stops at terrain before reaching a soldier behind it', () => {
   const w = flatWorld();
   hero(w).aim = 0;
   clearLine(w);
-  for (let y = 700; y < GROUND; y++) for (let x = 500; x < 520; x++) w.terrain.mask[y * 1920 + x] = 1;
+  solidRect(w, 500, 520, 700, GROUND);
   w.teams[1].units[0].x = 700;
   shoot(w, 'shotgun', 0);
   assert.equal(w.teams[1].units[0].hp, 100);

@@ -2,7 +2,7 @@
 // projectile and a read-only view of the world: nothing is ever carved, damaged or pushed.
 import { stepProjectile } from './physics.js';
 import { makeProjectile, muzzle, aimDir, MAX_SPEED } from './weapons.js';
-import { REACH } from './explode.js';
+import { REACH, blastDamage } from './explode.js';
 import { DEG } from './math.js';
 
 const MAX_SIM = 6; // s; a bouncer can return null for ever
@@ -53,8 +53,7 @@ export function impactValue(impact, w, ctx) {
   let nearest = Infinity;
   const dmg = (c) => {
     const d = Math.hypot(c.x - impact.x, c.y - impact.y);
-    const hurts = bursts && d < w.r + REACH;
-    return { d, amount: hurts ? Math.max(0, Math.round(w.damage * (1 - d / w.r))) : 0 };
+    return { d, amount: bursts && d < w.r + REACH ? blastDamage(w.damage, w.r, d) : 0 };
   };
   for (const c of ctx.enemies) {
     const r = dmg(c);

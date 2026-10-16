@@ -8,6 +8,9 @@ const LIFT = 0.45; // upward bias of every push
 // Centre of a soldier's body, where blasts measure their distance to.
 export const bodyCentre = (unit) => ({ x: unit.x, y: unit.y - 10 });
 
+// Damage left at distance d from the centre of a blast of radius r.
+export const blastDamage = (damage, r, d) => Math.max(0, Math.round(damage * (1 - d / r)));
+
 // Take hp off a living soldier and report it. Death itself is settled by resolveDeaths.
 export function hurt(world, unit, amount) {
   if (!unit.alive || amount <= 0) return;
@@ -59,7 +62,7 @@ export function explode(world, x, y, r, damage, direct = null) {
       const c = bodyCentre(u);
       const d = Math.hypot(c.x - x, c.y - y);
       if (d >= r + REACH && u.id !== direct) continue;
-      const amount = u.id === direct ? damage : Math.max(0, Math.round(damage * (1 - d / r)));
+      const amount = u.id === direct ? damage : blastDamage(damage, r, d);
       hurt(world, u, amount);
       const fall = Math.max(0, 1 - d / (r + REACH));
       push(u, c.x - x, c.y - y, d, fall * Math.max(amount, damage * 0.3) * KNOCKBACK);

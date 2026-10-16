@@ -9,6 +9,13 @@ export function h(tag, cls, ...kids) {
   return el;
 }
 
+// Restart a CSS animation class: remove it, force a reflow, add it back.
+export function replayClass(el, cls) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
 export function button(label, onPick, cls = 'btn') {
   const b = h('button', cls, label);
   b.type = 'button';

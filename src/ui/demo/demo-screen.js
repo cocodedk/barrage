@@ -1,7 +1,8 @@
 // The demo's overlay: a caption panel under the wind gauge (well clear of the soldiers) with
 // key caps that light while the game "presses" them, progress dots, and at the end the
 // "You're ready" card with the controls. It also plugs the step runner into the match.
-import { h, button, navigate, shell } from '../screens/dom.js';
+import { h, button, navigate, shell, replayClass } from '../screens/dom.js';
+import { DIGITS } from '../controls.js';
 import { howtoCards } from '../screens/howto.js';
 import { play } from '../audio.js';
 import { setSeenDemo } from '../storage.js';
@@ -12,7 +13,7 @@ const KICKER = { show: 'Watch', try: 'Your turn', done: 'Nice!' };
 const CODE_KEY = {
   ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', KeyA: 'A', KeyD: 'D', KeyW: 'W', KeyS: 'S',
   Enter: 'Enter', NumpadEnter: 'Enter', Space: 'Space', KeyQ: 'Q', KeyE: 'E',
-  Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5', Digit6: '6',
+  ...Object.fromEntries(DIGITS.map((d, i) => [d, String(i + 1)])),
 };
 
 const cap = (label) => {
@@ -76,9 +77,7 @@ export function demoScreen(m, act) {
       rich(text, trying && step.try ? step.try : step.watch);
       count.textContent = `${runner.i + 1} / ${STEPS.length}`;
       [...dots.children].forEach((d, i) => { d.className = i < runner.i ? 'past' : i === runner.i ? 'now' : ''; });
-      panel.classList.remove('pop');
-      void panel.offsetWidth; // restart the pop-in
-      panel.classList.add('pop');
+      replayClass(panel, 'pop');
     }
     const keys = runner.phase === 'try' ? [...input.down].map((c) => CODE_KEY[c]).filter(Boolean) : runner.lit;
     const now = keys.join(' ');

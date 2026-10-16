@@ -15,21 +15,23 @@ const MISSILE_SPEED = 300;
 // Fields: blast radius `r` and `damage`; `fuse` seconds (null = bursts on contact);
 // `restitution` > 0 makes a bouncer; `windy` shells feel the wind; `instant` weapons fire the
 // moment Space is released, with no power charge; `shots` per turn. `target`: fired at a marked
-// spot (the airstrike); `planted`: set down at the feet, not thrown (dynamite).
+// spot (the airstrike); `planted`: set down at the feet, not thrown (dynamite); `hitscan`: an
+// instant ray, no shell (the shotgun).
 export const WEAPONS = [
   { id: 'bazooka', name: 'Bazooka', r: 40, damage: 50, fuse: null, restitution: 0, windy: true, instant: false, shots: 1 },
   { id: 'grenade', name: 'Grenade', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
   { id: 'cluster', name: 'Cluster Bomb', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
   { id: 'airstrike', name: 'Airstrike', r: 25, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 1, target: true },
-  { id: 'shotgun', name: 'Shotgun', r: 8, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 2 },
+  { id: 'shotgun', name: 'Shotgun', r: 8, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 2, hitscan: true },
   { id: 'dynamite', name: 'Dynamite', r: 70, damage: 75, fuse: 4, restitution: 0.2, windy: false, instant: true, shots: 1, planted: true },
 ];
-export const BOMBLET = { kind: 'bomblet', r: 20, damage: 20, count: 5 };
+// What a cluster bomb scatters: weapon-shaped, so makeProjectile builds it like any shell.
+export const BOMBLET = { id: 'bomblet', r: 20, damage: 20, fuse: null, restitution: 0, windy: false, count: 5 };
 
 export const weaponById = (id) => WEAPONS.find((w) => w.id === id);
 
-// Is projectile `p` flying (not planted)? Bomblets and missiles have no row: they fly.
-export const inFlight = (p) => !weaponById(p.kind)?.planted;
+// Is projectile `p` flying (not planted)?
+export const inFlight = (p) => !p.planted;
 
 // Where planted dynamite sits under soldier `u`.
 export const dropPoint = (u) => ({ x: u.x, y: u.y - 3 });
@@ -37,7 +39,7 @@ export const dropPoint = (u) => ({ x: u.x, y: u.y - 3 });
 export function makeProjectile(w, owner, x, y, vx, vy, extra = {}) {
   return {
     kind: w.id, x, y, vx, vy, windy: w.windy, fuse: w.fuse, restitution: w.restitution,
-    radius: w.r, damage: w.damage, owner, ...extra,
+    radius: w.r, damage: w.damage, planted: !!w.planted, owner, ...extra,
   };
 }
 
@@ -71,7 +73,7 @@ export function fireWeapon(world, u, w, power, target) {
   const d = aimDir(u);
   const m = muzzle(u, d);
   world.events.push({ type: 'fire', weapon: w.id, x: m.x, y: m.y });
-  if (w.id === 'shotgun') return hitscan(world, u, w);
+  if (w.hitscan) return hitscan(world, u, w);
   if (w.planted) {
     const p = dropPoint(u);
     world.projectiles.push(makeProjectile(w, u.id, p.x, p.y, 0, 0));

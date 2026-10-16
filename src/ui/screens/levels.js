@@ -3,7 +3,7 @@
 import { LEVELS } from '../../core/levels.js';
 import { isOpen, unlockedLevel } from '../storage.js';
 import { play } from '../audio.js';
-import { h, button, focusItem, navigate, shell, lockIcon } from './dom.js';
+import { h, button, replayClass, focusItem, navigate, shell, lockIcon } from './dom.js';
 import { levelThumb } from './thumbs.js';
 
 const COLS = 5;
@@ -25,9 +25,7 @@ function card(level, mode, start) {
       return;
     }
     play('denied');
-    c.classList.remove('shake');
-    void c.offsetWidth; // restart the shake animation
-    c.classList.add('shake');
+    replayClass(c, 'shake');
   }, `level-card${open ? '' : ' locked'}`);
   c.style.setProperty('--edge', level.edge);
   c.append(h('div', 'level-meta', h('span', 'level-num', String(level.id)), h('span', 'level-name', level.name)));

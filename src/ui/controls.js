@@ -12,7 +12,7 @@ const KEYS = {
   left: ['ArrowLeft', 'KeyA'], right: ['ArrowRight', 'KeyD'], up: ['ArrowUp', 'KeyW'],
   down: ['ArrowDown', 'KeyS'], jump: ['Enter', 'NumpadEnter'], fire: ['Space'],
 };
-const DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
+export const DIGITS = WEAPONS.map((_, i) => `Digit${i + 1}`);
 const clampX = (x) => clamp(x, 20, W - 20); // the marker stays clear of the world's edges
 
 // armed: a fire press began during this aim phase (so a held key never fires into a new turn).

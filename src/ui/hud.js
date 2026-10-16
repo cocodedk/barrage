@@ -1,6 +1,6 @@
 // Heads-up display in the logical 1920 x 1080 frame, sized to read from across a room:
 // team HP panels, turn timer, wind, weapon bar (keys 1-6), power meter, turn banner.
-import { W, H, INK, rgba, shade, roundRect } from './sprites.js';
+import { W, H, INK, POWER_COLORS, rgba, shade, roundRect } from './sprites.js';
 import { WEAPONS, weaponById } from '../core/weapons.js';
 import { MAX_HP } from '../core/units.js';
 import { clamp } from '../core/math.js';
@@ -147,9 +147,9 @@ function weaponBar(ctx, world, color) {
     panel(ctx, bx - 6, y - 58, bw + 12, 38, undefined, 12);
     ctx.fillStyle = fill('power', () => {
       const gr = ctx.createLinearGradient(bx, 0, bx + bw, 0);
-      gr.addColorStop(0, '#5aff7a');
-      gr.addColorStop(0.55, '#ffe14a');
-      gr.addColorStop(1, '#ff4a3a');
+      gr.addColorStop(0, POWER_COLORS[0]);
+      gr.addColorStop(0.55, POWER_COLORS[1]);
+      gr.addColorStop(1, POWER_COLORS[2]);
       return gr;
     });
     roundRect(ctx, bx, y - 52, Math.max(12, bw * turn.power), 26, 9);

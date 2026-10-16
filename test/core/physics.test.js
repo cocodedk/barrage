@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { stepProjectile } from '../../src/core/physics.js';
-import { flatWorld, DT } from './helpers.js';
+import { flatWorld, DT, solidRect } from './helpers.js';
 
 const shell = (over = {}) => ({
   kind: 'bazooka', x: 100, y: 100, vx: 300, vy: -400, windy: false, fuse: null,
@@ -48,7 +48,7 @@ test('drag slows a projectile', () => {
 
 test('a 1200 px/s shell cannot tunnel through a 4 px wall', () => {
   const world = flatWorld();
-  for (let y = 400; y < 800; y++) for (let x = 600; x < 604; x++) world.terrain.mask[y * 1920 + x] = 1;
+  solidRect(world, 600, 604, 400, 800);
   const p = shell({ x: 500, y: 700, vx: 1200, vy: 0 });
   world.gravity = 0;
   const r = fly(p, world, 0.5);

@@ -5,6 +5,7 @@ import { clamp } from '../core/math.js';
 
 export const W = WORLD_W;
 export const H = WORLD_H;
+export const POWER_COLORS = ['#5aff7a', '#ffe14a', '#ff4a3a']; // power bar: low to full
 export const INK = '#141821'; // outlines
 export const INK_SOFT = 'rgba(10,12,20,0.7)'; // dark under-strokes that keep a line readable
 

@@ -7,6 +7,7 @@ import { createWorld } from '../../src/core/world.js';
 import { activeUnit } from '../../src/core/turns.js';
 import { aiPlan } from '../../src/core/ai.js';
 import { duel, enemyOf, playPlan, distTo, SHOOTER } from './ai-helpers.js';
+import { solidRect } from './helpers.js';
 
 test('skill 1 on flat ground: a real shot lands within 30 px of an enemy 600 px away', () => {
   const w = duel(1);
@@ -88,8 +89,7 @@ test('no ballistic shot clear: calls an airstrike on a soldier under open sky', 
   const w = duel(1, 600);
   const e = enemyOf(w);
   // A tall wall between them blocks every arc the muzzle can fly; the enemy stays under open sky.
-  const t = w.terrain;
-  for (let y = 0; y < 800; y++) t.mask.fill(1, y * t.w + 1100, y * t.w + 1180);
+  solidRect(w, 1100, 1180, 0, 800);
   const plan = aiPlan(w, makeRng(1));
   assert.equal(plan.weapon, 'airstrike');
   assert.ok(Math.abs(plan.target.x - e.x) < 1, 'aimed at the enemy x');

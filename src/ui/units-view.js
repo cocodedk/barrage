@@ -1,13 +1,12 @@
 // Soldiers, their HP labels, gravestones, and the active soldier's marker, reticle and aim
 // line. Squash and flinch come from a small visual state per unit id, fed by what changed
 // since the last frame (landing, losing hp).
-import { INK_SOFT, rgba, shade, glow, roundRect } from './sprites.js';
+import { INK_SOFT, POWER_COLORS, rgba, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
 import { aimDir, weaponById, MISSILE_OFFSETS } from '../core/weapons.js';
 import { activeUnit } from '../core/turns.js';
 
 const RETICLE = 92;
-const POWER = ['#5aff7a', '#ffe14a', '#ff4a3a'];
 
 function visual(v, u, dt) {
   let s = v.unitFx.get(u.id);
@@ -73,7 +72,7 @@ function aim(ctx, u, turn, t) {
   for (let d = 26; d < RETICLE - 10; d += 9) {
     const f = (d - 26) / (RETICLE - 36);
     const lit = charging && f <= turn.power;
-    ctx.fillStyle = lit ? POWER[f < 0.45 ? 0 : f < 0.8 ? 1 : 2] : `rgba(255,255,255,${0.85 - f * 0.4})`;
+    ctx.fillStyle = lit ? POWER_COLORS[f < 0.45 ? 0 : f < 0.8 ? 1 : 2] : `rgba(255,255,255,${0.85 - f * 0.4})`;
     const r = lit ? 3.4 : 2;
     ctx.beginPath();
     ctx.arc(cx + dx * d, cy + dy * d, r, 0, Math.PI * 2);

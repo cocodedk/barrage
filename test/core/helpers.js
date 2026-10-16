@@ -15,6 +15,12 @@ export function setFloor(world, y) {
   t.mask.fill(1, y * t.w);
 }
 
+// Solid block over x0 <= x < x1, y0 <= y < y1 (default: down to the bottom of the world).
+export function solidRect(world, x0, x1, y0, y1 = world.terrain.h) {
+  const t = world.terrain;
+  for (let y = y0; y < y1; y++) t.mask.fill(1, y * t.w + x0, y * t.w + x1);
+}
+
 // Flat ground from y=800 down; team 0 at x 300/360/420, team 1 at 1500/1560/1620.
 export function flatWorld(levelOver = {}, seed = 1) {
   const level = { ...LEVELS[0], windMax: 0, drag: 0, ...levelOver };
