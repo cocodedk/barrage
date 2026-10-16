@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Artillery — render bench</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; color: #fff;
+      font: 700 14px system-ui, sans-serif; }
+    #game { display: block; width: 100vw; height: 100vh; }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 6px; }
+    .cell { position: relative; }
+    .cell canvas { display: block; width: 100%; aspect-ratio: 16 / 9; }
+    .cell span { position: absolute; left: 8px; top: 6px; text-shadow: 0 1px 3px #000; }
+  </style>
+</head>
+<body>
+<script type="module">
+// Dev bench for the renderer (not shipped UI):
+//   dev.html?level=N        one level, live: ambient animates, turns tick over
+//   dev.html?level=all      5 x 3 thumbnails of every level
+//   &boom=1                 explosions + one shell of each kind, through the real core and fx
+//   &charge=0.6  hold the power meter at 60 %;  &seed=N  world seed;  &hud=0  hide HUD
+//   &t=4.2       start the clock there (lightning, meteors and the like are timed)
+import { LEVELS } from './src/core/levels.js';
+import { createWorld, stepWorld } from './src/core/world.js';
+import { makeRng } from './src/core/rng.js';
+import { explode } from './src/core/explode.js';
+import { weaponById, BOMBLET, makeProjectile } from './src/core/weapons.js';
+import { createFx, stepFx } from './src/fx/fx.js';
+import { applyEvent } from './src/fx/react.js';
+import { createCamera, stepCamera } from './src/fx/camera.js';
+import { createView, drawFrame } from './src/ui/view.js';
+
+const q = new URLSearchParams(location.search);
+const seed = Number(q.get('seed') || 7);
+const DT = 1 / 60;
+
+function setup(level, canvas) {
+  const rng = makeRng(seed);
+  const world = createWorld(level, 'versus', rng);
+  for (let i = 0; i < 90; i++) stepWorld(world, DT, {}, rng);
+  world.events.length = 0;
+  const view = createView(canvas, level, world);
+  return { world, rng, view, fx: createFx(), cam: createCamera() };
+}
+
+function drain(s) {
+  for (const ev of s.world.events) {
+    applyEvent(s.fx, ev, s.rng, s.world.level, s.world);
+    if (ev.type === 'crater') s.view.onCrater(ev.x, ev.y, ev.r);
+  }
+  s.world.events.length = 0;
+}
+
+let booms = 0;
+function boom(s) {
+  const w = s.world;
+  const x = 260 + ((booms * 467) % 1400);
+  const y = w.terrain.surfaceY(x);
+  if (y < w.liquidY) explode(w, x, y, 40 + (booms % 3) * 15, 30);
+  const shells = ['bazooka', 'grenade', 'cluster', 'dynamite'].map(weaponById);
+  shells.push({ id: 'bomblet', r: BOMBLET.r, damage: BOMBLET.damage, fuse: null, restitution: 0, windy: false });
+  shells.forEach((k, i) => w.projectiles.push(makeProjectile(k, -1, 300 + i * 330, 200, 140 - i * 40, -260)));
+  w.projectiles.push(makeProjectile(weaponById('airstrike'), -1, 1500 + (booms % 2) * 80, -20, 0, 300, { kind: 'missile' }));
+  booms++;
+}
+
+function single(level) {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'game';
+  document.body.append(canvas);
+  const s = setup(level, canvas);
+  const charge = q.has('charge') ? Number(q.get('charge')) : null;
+  s.view.showHud = q.get('hud') !== '0';
+  let t = Number(q.get('t') || 0); // start clock, to land on a timed flourish
+  let nextBoom = 0.4;
+  window.bench = s;
+  const frame = () => {
+    t += DT;
+    if (q.get('boom') === '1' && t >= nextBoom) {
+      boom(s);
+      nextBoom = t + 2.6;
+    }
+    if (charge != null && s.world.turn.phase === 'aim') {
+      Object.assign(s.world.turn, { charging: true, power: charge, timeLeft: Math.max(s.world.turn.timeLeft, 3.5) });
+    }
+    stepWorld(s.world, DT * s.fx.timeScale, {}, s.rng);
+    drain(s);
+    stepFx(s.fx, DT, s.world.terrain);
+    const focus = s.world.projectiles.find((p) => p.kind !== 'dynamite');
+    stepCamera(s.cam, focus || null, DT);
+    drawFrame(s.view, s.world, s.fx, s.cam, t);
+    requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+function grid() {
+  document.body.style.overflow = 'auto';
+  const wrap = document.createElement('div');
+  wrap.className = 'grid';
+  document.body.append(wrap);
+  for (const level of LEVELS) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const canvas = document.createElement('canvas');
+    const label = document.createElement('span');
+    label.textContent = `${level.id} ${level.name}`;
+    cell.append(canvas, label);
+    wrap.append(cell);
+    const s = setup(level, canvas);
+    s.view.showHud = false;
+    drawFrame(s.view, s.world, s.fx, s.cam, 3 + level.id * 0.37);
+  }
+}
+
+const which = q.get('level') || '1';
+if (which === 'all') grid();
+else single(LEVELS[Math.max(0, Math.min(LEVELS.length - 1, Number(which) - 1))]);
+</script>
+</body>
+</html>
