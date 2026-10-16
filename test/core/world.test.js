@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../../src/core/levels.js';
-import { makeRng } from '../../src/core/rng.js';
+import { makeRng, pick } from '../../src/core/rng.js';
 import { createWorld, stepWorld } from '../../src/core/world.js';
+import { WEAPONS } from '../../src/core/weapons.js';
 import { run, eventsOf, DT } from './helpers.js';
 
 const level = LEVELS[0];
@@ -87,7 +88,7 @@ test('random play for ten minutes keeps every invariant', () => {
   const phases = ['aim', 'flying', 'retreat', 'settling', 'over'];
   for (let i = 0; i < 60 * 600 && w.winner === null; i++) {
     const t = i * DT;
-    const weapon = Math.floor(rng() * 6);
+    const weapon = pick(rng, WEAPONS).id;
     const intents = { weapon, target: { x: rng() * 1920 }, charge: t % 3 < 1.2, release: t % 3 >= 1.2 && t % 3 < 1.22, aimUp: rng() < 0.05, left: rng() < 0.1 };
     stepWorld(w, DT, intents, rng);
     w.events.length = 0;
