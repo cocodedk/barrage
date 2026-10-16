@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { explode, hurt, resolveDeaths } from '../../src/core/explode.js';
-import { flatWorld, eventsOf, GROUND } from './helpers.js';
+import { flatWorld, eventsOf, run, DT, GROUND } from './helpers.js';
 
 const victim = (world) => world.teams[1].units[0];
 const centre = (u) => ({ x: u.x, y: u.y - 10 });
@@ -85,4 +85,17 @@ test('hurt ignores the dead and non-positive amounts', () => {
   u.alive = false;
   hurt(world, u, 30);
   assert.equal(u.hp, 100);
+});
+
+test('the death that wipes out a team is marked decisive, blast or drowning', () => {
+  const world = flatWorld();
+  const [a, b, c] = world.teams[1].units;
+  a.hp = 0;
+  resolveDeaths(world);
+  assert.equal(eventsOf(world, 'death')[0].decisive, false, 'two of his team still stand');
+  b.alive = false;
+  c.y = world.liquidY + 1; // the last one walks into the sea
+  run(world, DT);
+  const last = eventsOf(world, 'death').filter((e) => e.unit === c.id);
+  assert.deepEqual(last.map((e) => e.decisive), [true]);
 });

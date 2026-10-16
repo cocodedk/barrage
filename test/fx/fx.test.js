@@ -131,10 +131,14 @@ test('jump and land with a world raise dust; jump without one does nothing', () 
   assert.equal(soft.particles.length, 0);
 });
 
-test('win slows time to 0.3x for 1 s of real time, then restores it', () => {
+test('the deciding kill slows time to 0.3x for 1 s of real time, then restores it', () => {
   const fx = createFx();
   assert.equal(fx.timeScale, 1);
-  applyEvent(fx, { type: 'win', winner: 0 }, makeRng(1), level);
+  applyEvent(fx, { type: 'death', unit: 3, x: 500, y: 700, decisive: false }, makeRng(1), level);
+  applyEvent(fx, { type: 'win', winner: 0 }, makeRng(1), level); // after settling: too late to matter
+  stepFx(fx, 1 / 60);
+  assert.equal(fx.timeScale, 1, 'neither an ordinary death nor the win event slows time');
+  applyEvent(fx, { type: 'death', unit: 4, x: 500, y: 700, decisive: true }, makeRng(1), level);
   stepFx(fx, 1 / 60);
   assert.equal(fx.timeScale, 0.3);
   run(fx, 0.9);

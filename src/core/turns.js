@@ -18,8 +18,11 @@ export function newTurnState() {
   };
 }
 
-// Hand the turn to `teamId`: next living soldier in rotation, fresh timer, fresh wind.
+// Hand the turn to `teamId`: next living soldier in rotation, fresh timer, fresh wind. Each team
+// keeps the weapon it last held (a team's first turn starts on the bazooka), so nobody inherits
+// the other side's airstrike.
 export function beginTurn(world, teamId, rng) {
+  world.teams[world.turn.team].weapon = world.turn.weapon;
   const team = world.teams[teamId];
   const n = team.units.length;
   let idx = team.last;
@@ -27,7 +30,7 @@ export function beginTurn(world, teamId, rng) {
   while (!team.units[idx].alive);
   team.last = idx;
   world.wind = (rng() * 2 - 1) * world.level.windMax;
-  const keep = world.turn.weapon;
+  const keep = team.weapon || 'bazooka';
   Object.assign(world.turn, newTurnState(), { team: teamId, unit: idx, weapon: keep });
   world.turn.shotsLeft = weaponById(keep).shots;
   world.events.push({ type: 'turn', team: teamId, unit: idx, wind: world.wind });

@@ -30,6 +30,13 @@ function push(unit, dx, dy, d, strength) {
   unit.vy += ny * strength;
 }
 
+// The death event for `u` (already marked dead). decisive: it left his team with nobody
+// standing, so it is the kill that decides the match (the fx slow motion keys off it).
+export function deathEvent(world, u, y = u.y) {
+  const decisive = !world.teams[u.team].units.some((v) => v.alive);
+  return { type: 'death', unit: u.id, x: u.x, y, decisive };
+}
+
 // Soldiers at 0 hp die: a death event, then a small blast of their own.
 export function resolveDeaths(world) {
   const dying = [];
@@ -37,7 +44,7 @@ export function resolveDeaths(world) {
     for (const u of team.units) if (u.alive && u.hp <= 0) dying.push(u);
   }
   for (const u of dying) u.alive = false;
-  for (const u of dying) world.events.push({ type: 'death', unit: u.id, x: u.x, y: u.y });
+  for (const u of dying) world.events.push(deathEvent(world, u));
   for (const u of dying) explode(world, u.x, u.y - 8, DEATH_BLAST.r, DEATH_BLAST.damage);
 }
 

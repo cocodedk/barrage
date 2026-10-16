@@ -1,7 +1,7 @@
 // Soldiers: walking, jumping, falling, sliding, landing and drowning. unit.y is the feet
 // (the last air pixel above the ground); the body is 12 px wide and 20 px tall above it.
 import { UNIT_HALF_W } from './physics.js';
-import { hurt } from './explode.js';
+import { hurt, deathEvent } from './explode.js';
 
 export const WALK_SPEED = 90; // px/s
 export const JUMP_HEIGHT = 70; // px, kept under the safe fall height
@@ -31,7 +31,11 @@ function blocked(t, x, y) {
   );
 }
 
-const grounded = (t, x, y) => t.solid(x, y + 1) || t.solid(x - 4, y + 1) || t.solid(x + 4, y + 1);
+// Standing: the feet rest on ground, or the body cannot move 1 px down. The second half is the
+// test flyBy lands on, so a soldier propped on a speck by his side or shoulder counts as standing
+// and never flickers between landing and falling.
+const grounded = (t, x, y) =>
+  t.solid(x, y + 1) || t.solid(x - 4, y + 1) || t.solid(x + 4, y + 1) || blocked(t, x, y + 1);
 
 function startFall(u) {
   u.onGround = false;
@@ -104,7 +108,7 @@ function drown(world, u) {
   u.hp = 0;
   u.alive = false;
   world.events.push({ type: 'splash', x: u.x, y: world.liquidY });
-  world.events.push({ type: 'death', unit: u.id, x: u.x, y: world.liquidY });
+  world.events.push(deathEvent(world, u, world.liquidY));
 }
 
 // move = { dir: -1|0|1, jump: bool }; ignored for the dead.

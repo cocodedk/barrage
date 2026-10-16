@@ -63,6 +63,7 @@ function explosion(fx, ev, rng, level) {
 }
 
 function death(fx, ev, rng, level) {
+  if (ev.decisive) startSlowMo(fx); // the kill that decides the match, while it still flies
   const drowned = level?.liquid && ev.y >= level.liquid.y - GRAVE_LIQUID_MARGIN;
   if (!drowned) fx.graves.push({ x: ev.x, y: ev.y });
   for (let i = 0; i < 24; i++) spark(fx, rng, ev.x, ev.y - 10, 260);
@@ -121,7 +122,6 @@ export function applyEvent(fx, ev, rng, level, world) {
       if (u) dust(fx, rng, u.x, u.y, 4);
       break;
     }
-    case 'win': startSlowMo(fx); break;
     default: break;
   }
 }

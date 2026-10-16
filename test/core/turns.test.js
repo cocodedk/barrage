@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { POWER_RATE, RETREAT_TIME, TURN_TIME } from '../../src/core/turns.js';
-import { flatWorld, run, shoot, eventsOf, DT } from './helpers.js';
+import { flatWorld, run, shoot, eventsOf, skipTurn, DT } from './helpers.js';
 
 const GROUND_PIT = 900;
 const me = (w) => w.teams[0].units[0];
@@ -117,4 +117,19 @@ test('cancel drops a charge without firing', () => {
   run(w, DT, { cancel: true, release: true });
   assert.deepEqual([w.turn.charging, w.turn.power, w.turn.phase], [false, 0, 'aim']);
   assert.equal(eventsOf(w, 'fire').length, 0);
+});
+
+test('each team keeps its own weapon; a team starts on the bazooka', () => {
+  const w = flatWorld();
+  run(w, DT, { weapon: 'grenade' });
+  skipTurn(w);
+  assert.deepEqual([w.turn.team, w.turn.weapon], [1, 'bazooka'], "player 2 does not inherit player 1's grenade");
+  run(w, DT, { weapon: 'airstrike' }); // the computer calls an airstrike
+  skipTurn(w);
+  assert.deepEqual([w.turn.team, w.turn.weapon], [0, 'grenade'], 'the player gets his own grenade back');
+  run(w, DT, { weapon: 'shotgun' });
+  skipTurn(w);
+  assert.equal(w.turn.weapon, 'airstrike');
+  skipTurn(w);
+  assert.deepEqual([w.turn.weapon, w.turn.shotsLeft], ['shotgun', 2]);
 });
