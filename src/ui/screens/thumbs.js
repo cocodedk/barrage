@@ -33,16 +33,18 @@ function ground(g, level) {
   const liquidY = level.liquid.y / SCALE;
   const lq = rgb(level.liquid.color);
   for (let x = 0; x < TW; x++) {
+    const sx = Math.floor((x + 0.5) * SCALE);
     let prevSolid = false;
     for (let y = 0; y < TH; y++) {
-      const solid = t.solid(Math.floor((x + 0.5) * SCALE), Math.floor((y + 0.5) * SCALE));
+      const solid = t.solid(sx, Math.floor((y + 0.5) * SCALE));
       const i = (y * TW + x) * 4;
-      let c = null;
       if (solid) {
         const k = y / TH;
-        c = prevSolid ? a.map((v, j) => v + (b[j] - v) * k) : edge;
-      } else if (y >= liquidY) c = lq.map((v, j) => d[i + j] * 0.25 + v * 0.75);
-      if (c) [d[i], d[i + 1], d[i + 2], d[i + 3]] = [c[0], c[1], c[2], 255];
+        for (let j = 0; j < 3; j++) d[i + j] = prevSolid ? a[j] + (b[j] - a[j]) * k : edge[j];
+      } else if (y >= liquidY) {
+        for (let j = 0; j < 3; j++) d[i + j] = d[i + j] * 0.25 + lq[j] * 0.75;
+      }
+      if (solid || y >= liquidY) d[i + 3] = 255;
       prevSolid = solid;
     }
   }

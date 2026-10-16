@@ -9,7 +9,7 @@ import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
 import { applyEvent } from '../fx/react.js';
 import { createCamera, stepCamera } from '../fx/camera.js';
-import { createView, drawFrame, replayTerrain } from './view.js';
+import { createView, drawFrame, replayTerrain, warmFrame } from './view.js';
 import { play, soundForEvent } from './audio.js';
 import { createControls, humanIntents, resetControls } from './controls.js';
 import { endTick } from './input.js';
@@ -31,6 +31,7 @@ export function createMatch(canvas, level, mode, seed, opts = {}) {
   m.view = createView(canvas, level, m.world, m.attract);
   m.view.showHud = !m.attract;
   drain(m); // createWorld already announced the first turn
+  warmFrame(m.view, m.world, m.fx, m.cam);
   return m;
 }
 

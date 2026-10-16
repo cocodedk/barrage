@@ -4,6 +4,7 @@
 //   drawFrame(view, world, fx, camera, t)   t: seconds, any monotonic clock
 //   view.onCrater(x, y, r)                  cut a crater the core already carved
 //   replayTerrain(view)                     same seed again: restore the kept bake, no re-bake
+//   warmFrame(view, world, fx, camera)      draw one unseen frame, so the first real one is not slow
 //   view.cursor = { x, y } | null           airstrike target (world px), from the input layer
 // The canvas is sized to its CSS box; the 1920 x 1080 world is letterboxed into it, and the
 // backing store never exceeds 1:1 with the world (Pi 4 fill rate).
@@ -47,6 +48,7 @@ function rebuildTerrain(v, world, keepBake = false) {
     v.pristine = makeCanvas(c.width, c.height);
     v.pristine.getContext('2d').drawImage(c, 0, 0);
   }
+  v.cache = {}; // flourish sprites and gradients: they belong to the level, so a replay keeps them
   freshVisuals(v);
 }
 
@@ -63,10 +65,28 @@ export function replayTerrain(v) {
 function freshVisuals(v) {
   v.unitFx = new Map();
   v.trails = new WeakMap();
-  v.cache = {};
   v.hud = { key: null, t0: 0 };
   v.drift = 0;
   v.cursor = null;
+}
+
+// Draw one frame and throw it away: sprites, gradients, flourish caches and the bakes' first
+// trip to the GPU happen now, unseen, not in the first frame the player sees.
+// Then it is undone: the canvas gets its pixels back, both canvases their default state, the
+// first real frame refits (as it would have) and the per-match state starts over.
+export function warmFrame(v, world, fx, cam) {
+  const c = v.canvas;
+  const keep = makeCanvas(c.width, c.height);
+  keep.getContext('2d').drawImage(c, 0, 0);
+  drawFrame(v, world, fx, cam, 0);
+  c.width = keep.width; // setting the size clears the canvas and resets its context
+  c.height = keep.height;
+  v.ctx.drawImage(keep, 0, 0);
+  if (v.low) v.low.width = W / 4; // same size: blank again, default state
+  v.fit.css = '';
+  freshVisuals(v);
+  v.lastT = null;
+  v.now = 0;
 }
 
 // Match the backing store to the CSS box (capped at world resolution) and refit the world.
