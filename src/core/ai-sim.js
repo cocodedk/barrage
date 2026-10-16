@@ -74,20 +74,23 @@ function sweep(sw, w, ctx, org, facing, g) {
   return best;
 }
 
-const COARSE = { a0: -10, a1: 88, aStep: 5, p0: 0.2, p1: 1, pStep: 0.07, dt: 1 / 30 };
-const FAST = { ...COARSE, aStep: 6, pStep: 0.09 };
+const COARSE = { a0: -10, a1: 86, aStep: 6, p0: 0.2, p1: 1, pStep: 0.08, dt: 1 / 30 };
+const FAST = { ...COARSE, aStep: 8, pStep: 0.1 };
 
-// Coarse grid, then two refinements around the winner (one when `fast`, for secondary spots).
+// Coarse grid, then refinements around the winner: each a 5 x 5 grid at half the last spacing
+// (one fewer when `fast`, for secondary spots). Only the last flies at the game's own 1/60 s.
 export function bestShot(sw, w, ctx, org, facing, fast = false) {
   let best = sweep(sw, w, ctx, org, facing, fast ? FAST : COARSE);
   let spanA = (fast ? FAST : COARSE).aStep;
   let spanP = (fast ? FAST : COARSE).pStep;
-  for (let pass = 0; pass < (fast ? 1 : 2) && best.value > REFINE_VALUE; pass++) {
-    const aStep = spanA / 4;
-    const pStep = spanP / 4;
+  const passes = fast ? 2 : 3;
+  for (let pass = 0; pass < passes && best.value > REFINE_VALUE; pass++) {
+    const aStep = spanA / 2;
+    const pStep = spanP / 2;
     const g = {
       a0: Math.max(-20, best.deg - spanA), a1: Math.min(90, best.deg + spanA), aStep,
-      p0: Math.max(0.1, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep, dt: 1 / 60,
+      p0: Math.max(0.1, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep,
+      dt: pass === passes - 1 ? 1 / 60 : 1 / 30,
     };
     best = sweep(sw, w, ctx, org, facing, g) || best;
     spanA = aStep;
