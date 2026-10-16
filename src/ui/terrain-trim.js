@@ -120,16 +120,24 @@ export function openAir(m, w, h) {
   return seen;
 }
 
-// Back wall for caves, painted as dim rock so a cave reads as a hollow, not a hole.
-export function caveWalls(data, m, open, w, h, k, fill) {
-  const c = rgb(shade(fill, -0.5));
-  for (let p = 0; p < w * h; p++) {
-    if (m[p] || open[p]) continue;
-    const f = 0.75 + 0.35 * noise2((p % w) * k, Math.floor(p / w) * k, 14, 21);
-    const i = p * 4;
-    data[i] = c[0] * f;
-    data[i + 1] = c[1] * f;
-    data[i + 2] = c[2] * f;
-    data[i + 3] = 255;
-  }
+// For each cave pixel (air the sky cannot reach), how far it is to the nearest solid pixel
+// straight left, right, up or down; 0 elsewhere. Shades the cave's back wall.
+export function caveDistance(m, open, w, h) {
+  const dist = new Uint16Array(w * h);
+  const cave = (p) => !m[p] && !open[p];
+  for (let p = 0; p < w * h; p++) if (cave(p)) dist[p] = 65535;
+  const sweep = (start, step, count, lines) => {
+    for (let l = 0; l < lines; l++) {
+      let run = 0;
+      for (let i = 0, p = start(l); i < count; i++, p += step) {
+        run = cave(p) ? run + 1 : 0;
+        if (run && run < dist[p]) dist[p] = run;
+      }
+    }
+  };
+  sweep((y) => y * w, 1, w, h); // left to right
+  sweep((y) => y * w + w - 1, -1, w, h); // right to left
+  sweep((x) => x, w, h, w); // top down
+  sweep((x) => (h - 1) * w + x, -w, h, w); // bottom up
+  return dist;
 }

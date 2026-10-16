@@ -3,7 +3,9 @@
 //   createView(canvas, level, world) -> view
 //   drawFrame(view, world, fx, camera, t)   t: seconds, any monotonic clock
 //   view.onCrater(x, y, r)                  cut a crater the core already carved
-//   rebuildTerrain(view, world)             re-bake the terrain from the mask (new world)
+//   rebuildTerrain(view, world)             new match on the same level: re-bake terrain and
+//                                           parallax, reset banner, trails, squash, drift
+//   view.cursor = { x, y } | null           airstrike target (world px), from the input layer
 // The canvas is sized to its CSS box; the 1920 x 1080 world is letterboxed into it, and the
 // backing store never exceeds 1:1 with the world (Pi 4 fill rate).
 import { W, H, makeCanvas, shade } from './sprites.js';
@@ -26,22 +28,27 @@ export function createView(canvas, level, world) {
   const look = lookFor(level);
   const v = {
     canvas, ctx: canvas.getContext('2d'), level, look, world,
-    sky: buildSky(level, look), layers: buildLayers(level, look, horizonOf(world.terrain)), terrain: null,
-    low: level.pixel ? makeCanvas(W / 4, H / 4) : null,
-    unitFx: new Map(), trails: new WeakMap(), cache: {}, hud: { key: null, t0: 0 },
-    drift: 0, lastT: null, now: 0, showHud: true,
-    fit: { css: '', s: 1, ox: 0, oy: 0 },
+    sky: buildSky(level, look), low: level.pixel ? makeCanvas(W / 4, H / 4) : null,
+    lastT: null, now: 0, showHud: true, fit: { css: '', s: 1, ox: 0, oy: 0 },
+    cursor: null, // { x, y } airstrike target, set by the input layer; null hides the marker
   };
   v.onCrater = (x, y, r) => cutTerrain(v.terrain, x, y, r, level, look, v.now);
   rebuildTerrain(v, world);
   return v;
 }
 
+// Start over on a new world of the same level (a new match): re-bake the terrain and the
+// parallax (its horizon follows the new ground) and forget every per-match visual state.
 export function rebuildTerrain(v, world) {
   v.world = world;
+  v.layers = buildLayers(v.level, v.look, horizonOf(world.terrain));
   v.terrain = bakeTerrain(world.terrain, v.level, v.look);
-  v.unitFx.clear();
-  v.cache.glints = undefined;
+  v.unitFx = new Map();
+  v.trails = new WeakMap();
+  v.cache = {};
+  v.hud = { key: null, t0: 0 };
+  v.drift = 0;
+  v.cursor = null;
 }
 
 // Match the backing store to the CSS box (capped at world resolution) and refit the world.

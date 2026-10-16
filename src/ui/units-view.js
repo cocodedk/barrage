@@ -5,12 +5,14 @@ import { rgba, mix, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
 
 const RETICLE = 92;
+const DROP_GAP = 40; // px between airstrike missiles (core weapons.js MISSILE_GAP)
+const INK_SOFT = 'rgba(10,12,20,0.7)';
 const POWER = ['#5aff7a', '#ffe14a', '#ff4a3a'];
 
 function visual(v, u, dt) {
   let s = v.unitFx.get(u.id);
   if (!s) {
-    s = { vy: 0, ground: u.onGround, hp: u.hp, squash: 0, flinch: 0, walk: 0, sx: 1, sy: 1 };
+    s = { vy: 0, ground: u.onGround, hp: u.hp, squash: 0, flinch: 0, walk: 0, walking: false, sx: 1, sy: 1 };
     v.unitFx.set(u.id, s);
   }
   if (!s.ground && u.onGround) s.squash = Math.min(1, 0.3 + Math.abs(s.vy) / 450);
@@ -20,8 +22,8 @@ function visual(v, u, dt) {
   s.hp = u.hp;
   s.squash = Math.max(0, s.squash - dt * 4);
   s.flinch = Math.max(0, s.flinch - dt * 3.5);
-  const moving = u.onGround && Math.abs(u.vx) > 5;
-  s.walk = moving ? s.walk + dt * 16 : null;
+  s.walking = u.onGround && Math.abs(u.vx) > 5;
+  if (s.walking) s.walk += dt * 16;
   const q = s.squash * Math.cos((1 - s.squash) * Math.PI * 1.5);
   const stretch = !u.onGround && u.vy < -80 ? 0.1 : 0;
   s.sy = 1 - 0.32 * q + stretch;
@@ -97,6 +99,44 @@ function aim(ctx, u, turn, t) {
   ctx.fillRect(rx - 1.5, ry - 1.5, 3, 3);
 }
 
+// Airstrike target: a dashed drop line from the sky, the five drop points, a glowing ring.
+function target(ctx, c, color, t) {
+  ctx.setLineDash([12, 9]);
+  ctx.lineDashOffset = -t * 40;
+  for (const [w, s] of [[5, 'rgba(10,12,20,0.45)'], [2.5, rgba(mix(color, '#ffffff', 0.3), 0.95)]]) {
+    ctx.lineWidth = w;
+    ctx.strokeStyle = s;
+    ctx.beginPath();
+    ctx.moveTo(c.x, 0);
+    ctx.lineTo(c.x, c.y - 22);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for (let i = -2; i <= 2; i++) {
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillRect(c.x + i * DROP_GAP - 4, c.y - 4, 8, 8);
+    ctx.fillStyle = mix(color, '#ffffff', 0.5);
+    ctx.fillRect(c.x + i * DROP_GAP - 2.5, c.y - 2.5, 5, 5);
+  }
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.55 + 0.25 * Math.sin(t * 6);
+  ctx.drawImage(glow(color), c.x - 34, c.y - 34, 68, 68);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  const r = 18 + Math.sin(t * 6) * 2;
+  for (const [w, s] of [[5.5, INK_SOFT], [3, mix(color, '#ffffff', 0.3)]]) {
+    ctx.lineWidth = w;
+    ctx.strokeStyle = s;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+    ctx.moveTo(c.x - r - 7, c.y);
+    ctx.lineTo(c.x - r + 5, c.y);
+    ctx.moveTo(c.x + r - 5, c.y);
+    ctx.lineTo(c.x + r + 7, c.y);
+    ctx.stroke();
+  }
+}
+
 export function drawUnits(ctx, v, world, fx, t, dt) {
   for (const g of fx.graves) drawGrave(ctx, g.x, g.y);
   const turn = world.turn;
@@ -113,6 +153,9 @@ export function drawUnits(ctx, v, world, fx, t, dt) {
   }
   for (const team of world.teams) for (const u of team.units) if (u.alive) label(ctx, u, team.color);
   if (showAim && turn.weapon !== 'airstrike') aim(ctx, active, turn, t);
+  if (showAim && turn.weapon === 'airstrike' && v.cursor) {
+    target(ctx, v.cursor, world.teams[turn.team].color, t);
+  }
   if (active?.alive && (showAim || turn.phase === 'retreat')) {
     marker(ctx, active, shade(world.teams[turn.team].color, 0.1), t);
   }

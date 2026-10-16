@@ -57,7 +57,7 @@ function weapon(ctx, kind) {
   }
 }
 
-// s: { sx, sy, flinch 0..1, walk phase or null }; held: weapon id or null.
+// s: { sx, sy, flinch 0..1, walking, walk phase }; held: weapon id or null.
 export function drawSoldier(ctx, u, color, s, held) {
   const f = u.facing;
   const body = s.flinch ? mix(color, '#ffffff', s.flinch * 0.8) : color;
@@ -72,7 +72,7 @@ export function drawSoldier(ctx, u, color, s, held) {
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = INK;
   // boots
-  const step = s.walk == null ? 0 : Math.sin(s.walk) * 2;
+  const step = s.walking ? Math.sin(s.walk) * 2 : 0;
   ctx.fillStyle = '#2b2b30';
   ctx.fillRect(-5 + step, -4, 4.5, 4);
   ctx.fillRect(0.5 - step, -4, 4.5, 4);

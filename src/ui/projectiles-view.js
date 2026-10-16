@@ -1,36 +1,42 @@
 // Shells in flight: a glowing trail from a per-projectile history ring (keyed by object
-// identity in a WeakMap, so it vanishes with the shell) and a sprite per kind.
+// identity in a WeakMap, so it vanishes with the shell) and a sprite per kind. Trail points
+// age by time, so a shell that comes to rest loses its tail.
 import { rgba, hash, glow } from './sprites.js';
 
 const TRAIL = 22;
+const TRAIL_LIFE = 0.45; // s a trail point stays visible
 const COLORS = {
   bazooka: '#ffb347', missile: '#ff6a3a', grenade: '#a8ff7a', cluster: '#ff8a5a',
   bomblet: '#ffd24a', dynamite: '#ff4a3a',
 };
 const INK = '#141821';
 
-function remember(v, p) {
+function remember(v, p, t) {
   let h = v.trails.get(p);
   if (!h) {
-    h = { xs: new Float32Array(TRAIL), ys: new Float32Array(TRAIL), n: 0, i: 0 };
+    h = {
+      xs: new Float32Array(TRAIL), ys: new Float32Array(TRAIL), ts: new Float64Array(TRAIL), n: 0, i: 0,
+    };
     v.trails.set(p, h);
   }
   const last = (h.i + TRAIL - 1) % TRAIL;
   if (h.n && Math.abs(p.x - h.xs[last]) + Math.abs(p.y - h.ys[last]) < 2) return h;
   h.xs[h.i] = p.x;
   h.ys[h.i] = p.y;
+  h.ts[h.i] = t;
   h.i = (h.i + 1) % TRAIL;
   h.n = Math.min(TRAIL, h.n + 1);
   return h;
 }
 
-function trail(ctx, h, color) {
+function trail(ctx, h, color, t) {
   ctx.lineCap = 'round';
   for (const [wide, alpha] of [[9, 0.18], [3.5, 0.75]]) {
     for (let k = 1; k < h.n; k++) {
       const a = (h.i + TRAIL - h.n + k - 1) % TRAIL;
       const b = (a + 1) % TRAIL;
-      const f = k / h.n;
+      const f = (k / h.n) * (1 - (t - h.ts[b]) / TRAIL_LIFE);
+      if (f <= 0) continue;
       ctx.strokeStyle = rgba(color, alpha * f);
       ctx.lineWidth = 1 + wide * f;
       ctx.beginPath();
@@ -136,8 +142,8 @@ function fuseLabel(ctx, p) {
 export function drawProjectiles(ctx, v, world, t) {
   ctx.globalCompositeOperation = 'lighter';
   for (const p of world.projectiles) {
-    const h = remember(v, p);
-    if (p.kind !== 'dynamite') trail(ctx, h, COLORS[p.kind] || '#ffffff');
+    const h = remember(v, p, t);
+    if (p.kind !== 'dynamite') trail(ctx, h, COLORS[p.kind] || '#ffffff', t);
   }
   for (const p of world.projectiles) {
     ctx.globalAlpha = 0.55;

@@ -3,7 +3,7 @@
 // and are drawn back up with smoothing off.
 import { W, H, makeCanvas, rgb, rgba, mix, glow } from './sprites.js';
 import { TEX } from './terrain-tex.js';
-import { trimSpec, trimPixel, dress, openAir, caveWalls } from './terrain-trim.js';
+import { trimSpec, trimPixel, dress, openAir, caveDistance } from './terrain-trim.js';
 
 const RIM = 2; // px of bright edge along the surface
 const HOT_TIME = 1.4; // s a fresh crater rim glows
@@ -34,10 +34,21 @@ function runs(m, open, w, h) {
   return { depth, under };
 }
 
+// A cave's back wall: the ground's own colour and texture in shadow, darkest deep inside
+// the hollow, shadowed under its ceiling, with a faint lit lip just above its floor
+// (lip = edge colour, or null).
+function caveWall(data, p, o, dist, lip, ceiling) {
+  const f = (0.66 - 0.3 * Math.min(1, dist / 40)) * (ceiling ? 0.55 : 1);
+  const q = p * 4;
+  for (let i = 0; i < 3; i++) data[q + i] = lip ? o[i] * f + (lip[i] - o[i] * f) * 0.3 : o[i] * f;
+  data[q + 3] = 255;
+}
+
 function paint(m, w, h, k, level, look) {
   const img = new ImageData(w, h);
   const rim = new ImageData(w, h);
   const open = openAir(m, w, h);
+  const caveDist = caveDistance(m, open, w, h);
   const { depth, under } = runs(m, open, w, h);
   const top = rgb(level.fill[0]);
   const bot = rgb(level.fill[1]);
@@ -49,7 +60,7 @@ function paint(m, w, h, k, level, look) {
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const p = y * w + x;
-      if (!m[p]) continue;
+      if (!m[p] && !caveDist[p]) continue;
       const wx = x * k;
       const wy = y * k;
       const d = depth[p] * k;
@@ -57,6 +68,11 @@ function paint(m, w, h, k, level, look) {
       const g = Math.min(1, Math.max(0, (wy - 250) / 750) * 0.8 + 0.3 * Math.min(1, d / 140));
       for (let i = 0; i < 3; i++) o[i] = top[i] + (bot[i] - top[i]) * g;
       tex(o, wx, wy, d);
+      if (!m[p]) {
+        const lip = y + 3 < h && m[p + w * 3] ? edge : null;
+        caveWall(img.data, p, o, caveDist[p] * k, lip, y >= 4 && m[p - w * 4]);
+        continue;
+      }
       trimPixel(o, T, wx, wy, d);
       let e = 0;
       if (d <= RIM * (k === 1 ? 1 : 2) || (y > 0 && !m[p - w])) e = 1;
@@ -77,7 +93,6 @@ function paint(m, w, h, k, level, look) {
       img.data[q + 3] = 255;
     }
   }
-  caveWalls(img.data, m, open, w, h, k, level.fill[1]);
   dress(img.data, m, w, h, k, T);
   return { img, rim };
 }
