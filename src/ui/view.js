@@ -5,6 +5,7 @@
 //   view.onCrater(x, y, r)                  cut a crater the core already carved
 //   rebuildTerrain(view, world)             new match on the same level: re-bake terrain and
 //                                           parallax, reset banner, trails, squash, drift
+//   replayTerrain(view, world)              same seed again: restore the kept bake, no re-bake
 //   view.cursor = { x, y } | null           airstrike target (world px), from the input layer
 // The canvas is sized to its CSS box; the 1920 x 1080 world is letterboxed into it, and the
 // backing store never exceeds 1:1 with the world (Pi 4 fill rate).
@@ -24,7 +25,8 @@ import { drawHud } from './hud.js';
 const HOME = { x: W / 2, y: H / 2, zoom: 1 };
 const NO_FX = { particles: [], rings: [], flashes: [], floaters: [], graves: [], shakeX: 0, shakeY: 0 };
 
-export function createView(canvas, level, world) {
+// keepBake: hold a copy of the fresh terrain bake so replayTerrain can restore it (the title battle).
+export function createView(canvas, level, world, keepBake = false) {
   const look = lookFor(level);
   const v = {
     canvas, ctx: canvas.getContext('2d'), level, look, world,
@@ -33,16 +35,36 @@ export function createView(canvas, level, world) {
     cursor: null, // { x, y } airstrike target, set by the input layer; null hides the marker
   };
   v.onCrater = (x, y, r) => cutTerrain(v.terrain, x, y, r, level, look, v.now);
-  rebuildTerrain(v, world);
+  rebuildTerrain(v, world, keepBake);
   return v;
 }
 
 // Start over on a new world of the same level (a new match): re-bake the terrain and the
 // parallax (its horizon follows the new ground) and forget every per-match visual state.
-export function rebuildTerrain(v, world) {
-  v.world = world;
+export function rebuildTerrain(v, world, keepBake = false) {
   v.layers = buildLayers(v.level, v.look, horizonOf(world.terrain));
   v.terrain = bakeTerrain(world.terrain, v.level, v.look);
+  v.pristine = null;
+  if (keepBake) {
+    const c = v.terrain.canvas;
+    v.pristine = makeCanvas(c.width, c.height);
+    v.pristine.getContext('2d').drawImage(c, 0, 0);
+  }
+  freshVisuals(v, world);
+}
+
+// The same ground again (same level and seed): put the fresh bake back with one drawImage
+// instead of baking, which stalls a Pi 4 for about a second.
+export function replayTerrain(v, world) {
+  const { canvas, ctx } = v.terrain;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(v.pristine, 0, 0);
+  v.terrain.hot = [];
+  freshVisuals(v, world);
+}
+
+function freshVisuals(v, world) {
+  v.world = world;
   v.unitFx = new Map();
   v.trails = new WeakMap();
   v.cache = {};

@@ -45,21 +45,30 @@ export function createInput(canvas) {
     resetInput(input);
   });
 
+  const release = () => {
+    m.down = false;
+    m.released = true;
+  };
   addEventListener('pointermove', (e) => {
     m.x = e.clientX;
     m.y = e.clientY;
     m.seen = true;
     m.moved = true;
+    if (m.down && !(e.buttons & 1)) release(); // its pointerup went missing: the button is up
   });
   canvas.addEventListener('pointerdown', (e) => {
     gesture();
     if (e.button !== 0) return;
     Object.assign(m, { x: e.clientX, y: e.clientY, seen: true, moved: true, down: true, pressed: true });
+    try {
+      canvas.setPointerCapture(e.pointerId); // the pointerup arrives even outside the window
+    } catch {
+      // the pointer is already gone: the buttonless-move check above still releases it
+    }
   });
   addEventListener('pointerup', (e) => {
     if (e.button !== 0 || !m.down) return;
-    m.down = false;
-    m.released = true;
+    release();
   });
   addEventListener('pointercancel', () => cancelPointer(input));
   addEventListener('pointerdown', gesture);

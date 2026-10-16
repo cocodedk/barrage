@@ -4,7 +4,7 @@ import { LEVELS } from './core/levels.js';
 import { createInput, resetInput } from './ui/input.js';
 import { unlockAudio, toggleMute, play } from './ui/audio.js';
 import { unlockedLevel, seenDemo, setSeenDemo } from './ui/storage.js';
-import { createMatch, stepMatch, drawMatch, forceWin } from './ui/game.js';
+import { createMatch, stepMatch, drawMatch, forceWin, replayAttract } from './ui/game.js';
 import { createDebug } from './ui/debug.js';
 import { createScreens, toast } from './ui/screens/stage.js';
 import { titleScreen } from './ui/screens/title.js';
@@ -16,7 +16,6 @@ import { demoScreen } from './ui/demo/demo-screen.js';
 import { DEMO_SEED } from './ui/demo/scene.js';
 
 const ROUND_END_DELAY = 2.2; // s after the deciding blast before the round-end card
-const ATTRACT_MAX = 150; // s before the title battle moves to another level
 const MIN_LOADING = 0.7; // s the level card stays up, so it reads as a moment, not a flicker
 
 const canvas = document.getElementById('game');
@@ -28,8 +27,10 @@ const app = { state: 'title', match: null, attract: null, demo: null, loadToken:
 const seed = () => crypto.getRandomValues(new Uint32Array(1))[0];
 const randomLevel = () => LEVELS[seed() % LEVELS.length];
 
+// The title's backdrop battle: one random level, baked once while the title fades in. It is
+// kept through menus and matches, so coming back to the title never bakes again.
 function startAttract() {
-  if (app.match || app.state === 'loading') return; // a level is on its way: no backdrop needed
+  if (app.attract || app.match || app.state === 'loading') return; // kept, or a level is on its way
   app.attract = createMatch(canvas, randomLevel(), 'campaign', seed(), { attract: true });
 }
 
@@ -59,7 +60,6 @@ function startLevel(level, mode) {
   const demo = mode === 'demo';
   app.state = 'loading';
   app.match = null;
-  app.attract = null;
   app.demo = null;
   stage.show(loadingScreen(level, demo ? 'How to play' : mode === 'campaign' ? 'Campaign' : 'Versus'));
   const t0 = performance.now();
@@ -131,7 +131,7 @@ const debug = createDebug({
 function frame(dt, t) {
   if (app.attract && !app.match) {
     const a = app.attract;
-    if ((a.world.winner != null && a.overTime > 3) || a.time > ATTRACT_MAX) startAttract();
+    if (a.world.winner != null && a.overTime > 3) replayAttract(a); // same level: no bake
   }
   const m = app.match || app.attract;
   if (!m) return;

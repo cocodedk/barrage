@@ -4,6 +4,7 @@
 import { W, H, makeCanvas, rgb, rgba, mix, glow } from './sprites.js';
 import { TEX } from './terrain-tex.js';
 import { trimSpec, trimPixel, dress, openAir, caveDistance } from './terrain-trim.js';
+import { craterSpans } from './crater-blocks.js';
 
 const RIM = 2; // px of bright edge along the surface
 const HOT_TIME = 1.4; // s a fresh crater rim glows
@@ -125,11 +126,11 @@ export function bakeTerrain(terrain, level, look) {
 }
 
 // Cut a crater the core already carved: scorch the ground around it, trace a fresh edge,
-// then clear the disc. Called once per crater, never per frame.
+// then clear exactly the cells the core carved. Called once per crater, never per frame.
 export function cutTerrain(tv, x, y, r, level, look, now) {
   const { ctx: g, k } = tv;
-  const cx = Math.round(x) / k;
-  const cy = Math.round(y) / k;
+  const cx = (Math.round(x) + 0.5) / k; // the carve's centre pixel, in canvas cells
+  const cy = (Math.round(y) + 0.5) / k;
   const R = r / k;
   g.save();
   g.globalCompositeOperation = 'source-atop';
@@ -145,17 +146,8 @@ export function cutTerrain(tv, x, y, r, level, look, now) {
   g.arc(cx, cy, R + 1.5 / k, 0, Math.PI * 2);
   g.stroke();
   g.globalCompositeOperation = 'destination-out';
-  if (k > 1) {
-    const n = Math.ceil(R);
-    for (let dy = -n; dy <= n; dy++) {
-      const half = Math.floor(Math.sqrt(Math.max(0, R * R - dy * dy)));
-      g.fillRect(Math.round(cx - half), Math.round(cy + dy), half * 2 + 1, 1);
-    }
-  } else {
-    g.beginPath();
-    g.arc(cx, cy, R + 0.5, 0, Math.PI * 2);
-    g.fill();
-  }
+  g.fillStyle = '#000'; // opaque: the scorch gradient would only half-clear the hole
+  for (const [row, x0, x1] of craterSpans(x, y, r, k)) g.fillRect(x0, row, x1 - x0 + 1, 1);
   g.restore();
   tv.hot.push({ x, y, r, t0: now });
 }

@@ -10,6 +10,13 @@ const WIND_FULL = 180; // px/s^2 that fills the wind gauge
 const BANNER_IN = 0.45;
 const BANNER_HOLD = 2.1;
 const BANNER_OUT = 0.45;
+const fills = new Map(); // gradients with fixed geometry, built once rather than every frame
+
+function fill(key, make) {
+  let gr = fills.get(key);
+  if (!gr) fills.set(key, (gr = make()));
+  return gr;
+}
 
 function panel(ctx, x, y, w, h, border = 'rgba(255,255,255,0.16)', r = 16) {
   roundRect(ctx, x, y, w, h, r);
@@ -52,10 +59,12 @@ function teamPanel(ctx, team, active, right) {
   const fw = Math.max(0, (bw * hp) / max);
   if (fw > 4) {
     roundRect(ctx, right ? bx + bw - fw : bx, 80, fw, 20, 10);
-    const gr = ctx.createLinearGradient(0, 80, 0, 100);
-    gr.addColorStop(0, mix(team.color, '#ffffff', 0.45));
-    gr.addColorStop(1, team.color);
-    ctx.fillStyle = gr;
+    ctx.fillStyle = fill(`hp ${team.color}`, () => {
+      const gr = ctx.createLinearGradient(0, 80, 0, 100);
+      gr.addColorStop(0, mix(team.color, '#ffffff', 0.45));
+      gr.addColorStop(1, team.color);
+      return gr;
+    });
     ctx.fill();
   }
 }
@@ -133,11 +142,13 @@ function weaponBar(ctx, world, color) {
     const bw = 560;
     const bx = W / 2 - bw / 2;
     panel(ctx, bx - 6, y - 58, bw + 12, 38, undefined, 12);
-    const gr = ctx.createLinearGradient(bx, 0, bx + bw, 0);
-    gr.addColorStop(0, '#5aff7a');
-    gr.addColorStop(0.55, '#ffe14a');
-    gr.addColorStop(1, '#ff4a3a');
-    ctx.fillStyle = gr;
+    ctx.fillStyle = fill('power', () => {
+      const gr = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      gr.addColorStop(0, '#5aff7a');
+      gr.addColorStop(0.55, '#ffe14a');
+      gr.addColorStop(1, '#ff4a3a');
+      return gr;
+    });
     roundRect(ctx, bx, y - 52, Math.max(12, bw * turn.power), 26, 9);
     ctx.fill();
     text(ctx, `${Math.round(turn.power * 100)}%`, W / 2, y - 39, 20, '#141821', 'center', 900);

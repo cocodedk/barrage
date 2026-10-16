@@ -3,6 +3,7 @@
 import { W, H, rgba, mix, shade, hash, glow } from './sprites.js';
 
 const STEP = 16;
+const bodies = new WeakMap(); // level -> its body gradient, built on the first frame
 
 const surface = (x, y, t) => y + Math.sin(x * 0.021 + t * 2.1) * 2.6 + Math.sin(x * 0.0067 - t * 1.3) * 2.2;
 
@@ -28,10 +29,14 @@ export function drawLiquid(ctx, level, look, t) {
   const hot = kind === 'lava';
   const glowy = hot || look.glow > 0.6;
   // body
-  const gr = ctx.createLinearGradient(0, y - 4, 0, H);
-  gr.addColorStop(0, rgba(hot ? mix(color, '#ffe07a', 0.55) : color, hot ? 0.96 : 0.62));
-  gr.addColorStop(0.35, rgba(color, hot ? 0.95 : 0.78));
-  gr.addColorStop(1, rgba(shade(color, -0.55), 0.95));
+  let gr = bodies.get(level);
+  if (!gr) {
+    gr = ctx.createLinearGradient(0, y - 4, 0, H);
+    gr.addColorStop(0, rgba(hot ? mix(color, '#ffe07a', 0.55) : color, hot ? 0.96 : 0.62));
+    gr.addColorStop(0.35, rgba(color, hot ? 0.95 : 0.78));
+    gr.addColorStop(1, rgba(shade(color, -0.55), 0.95));
+    bodies.set(level, gr);
+  }
   ctx.fillStyle = gr;
   ctx.beginPath();
   ctx.moveTo(-200, H + 200);

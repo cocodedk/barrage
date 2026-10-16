@@ -7,7 +7,7 @@ import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
 import { applyEvent } from '../fx/react.js';
 import { createCamera, stepCamera } from '../fx/camera.js';
-import { createView, drawFrame } from './view.js';
+import { createView, drawFrame, replayTerrain } from './view.js';
 import { play, soundForEvent } from './audio.js';
 import { createControls, humanIntents } from './controls.js';
 import { endTick } from './input.js';
@@ -23,17 +23,29 @@ export function createMatch(canvas, level, mode, seed, opts = {}) {
   const rng = makeRng(seed);
   const world = createWorld(level, mode, rng);
   if (opts.attract) for (const t of world.teams) t.ai = { skill: ATTRACT_SKILL };
-  const view = createView(canvas, level, world);
+  const view = createView(canvas, level, world, !!opts.attract);
   view.showHud = !opts.attract;
   view.cursor = null;
   const m = {
     level, mode, seed, attract: !!opts.attract, world, rng, view,
     fxRng: makeRng(seed ^ 0x9e3779b9), // effects draw from their own stream
     fx: createFx(), cam: createCamera(), controls: createControls(),
-    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, time: 0, overTime: 0,
+    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, time: 0, overTime: 0, replays: 0,
   };
   drain(m); // createWorld already announced the first turn
   return m;
+}
+
+// The title battle is over: fight it again on the same battlefield. The same seed grows the
+// same ground, so the view restores its kept bake rather than baking again; a fresh rng makes
+// it a new battle.
+export function replayAttract(m) {
+  m.world = createWorld(m.level, m.mode, makeRng(m.seed));
+  for (const t of m.world.teams) t.ai = { skill: ATTRACT_SKILL };
+  m.rng = makeRng(m.seed + ++m.replays);
+  replayTerrain(m.view, m.world);
+  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, time: 0, overTime: 0 });
+  drain(m);
 }
 
 function drain(m) {
@@ -41,7 +53,10 @@ function drain(m) {
   for (const ev of world.events) {
     applyEvent(m.fx, ev, m.fxRng, world.level, world);
     if (ev.type === 'crater') m.view.onCrater(ev.x, ev.y, ev.r);
-    if (ev.type === 'turn') m.ai.plan = null;
+    if (ev.type === 'turn') {
+      m.ai.plan = null;
+      m.controls.markerX = null; // the next airstrike marker starts at the new soldier
+    }
     if (m.attract) continue;
     if (ev.type === 'win' && m.mode === 'campaign' && ev.winner === 0) unlockLevel(m.level.id + 1); // saved now, not when the card shows
     if (ev.type === 'win') play(m.mode === 'campaign' && ev.winner !== 0 ? 'lose' : 'win'); // computer won: no fanfare

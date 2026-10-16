@@ -48,14 +48,18 @@ function mist(ctx, v, t) {
 
 function caustics(ctx, v, t) {
   ctx.globalCompositeOperation = 'lighter';
+  v.cache.caustics ??= (() => { // one gradient for every shaft; each one's flicker is globalAlpha
+    const gr = ctx.createLinearGradient(0, 0, 0, 980);
+    gr.addColorStop(0, 'rgba(190,255,250,1)');
+    gr.addColorStop(1, 'rgba(190,255,250,0)');
+    return gr;
+  })();
+  ctx.fillStyle = v.cache.caustics;
   for (let i = 0; i < 8; i++) {
     const x = hash(i + 220) * W + Math.sin(t * 0.3 + i) * 70;
     const w = 50 + hash(i + 221) * 110;
     const lean = 160 + Math.sin(t * 0.25 + i * 2) * 60;
-    const gr = ctx.createLinearGradient(0, 0, 0, 980);
-    gr.addColorStop(0, `rgba(190,255,250,${0.16 + 0.08 * Math.sin(t * 0.8 + i * 1.7)})`);
-    gr.addColorStop(1, 'rgba(190,255,250,0)');
-    ctx.fillStyle = gr;
+    ctx.globalAlpha = 0.16 + 0.08 * Math.sin(t * 0.8 + i * 1.7);
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x + w, 0);
@@ -63,6 +67,7 @@ function caustics(ctx, v, t) {
     ctx.lineTo(x + lean, 980);
     ctx.fill();
   }
+  ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
 }
 
