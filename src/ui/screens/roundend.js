@@ -2,6 +2,7 @@
 import { h, button, navigate, shell } from './dom.js';
 import { LEVELS } from '../../core/levels.js';
 
+const ARM_MS = 400; // fire-button mashing at the deciding blast must not skip the card
 const CONFETTI = ['#ffd24a', '#ff5a8a', '#4ad8ff', '#7dff6a', '#ffffff', '#ff9a2e', '#b78bff'];
 
 function confetti(n = 70) {
@@ -19,6 +20,9 @@ function confetti(n = 70) {
 
 // outcome: { mode, level, winner (team id | 'draw'), teams } ; act: { next, replay, levels, menu }
 export function roundEndScreen(o, act) {
+  const shown = performance.now();
+  const settled = () => performance.now() - shown >= ARM_MS;
+  const go = Object.fromEntries(Object.entries(act).map(([k, fn]) => [k, () => settled() && fn()]));
   const campaign = o.mode === 'campaign';
   const draw = o.winner === 'draw';
   const won = !draw && (campaign ? o.winner === 0 : true);
@@ -39,10 +43,10 @@ export function roundEndScreen(o, act) {
     banner.style.setProperty('--team', color);
   }
   const items = [];
-  if (campaign && won && !last) items.push(button('Next level', act.next, 'btn btn-big'));
-  items.push(button(won || !campaign ? (campaign ? 'Replay' : 'Rematch') : 'Retry', act.replay, 'btn btn-big'));
-  if (!campaign) items.push(button('Pick level', act.levels, 'btn btn-big'));
-  items.push(button('Menu', act.menu, 'btn btn-big'));
+  if (campaign && won && !last) items.push(button('Next level', go.next, 'btn btn-big'));
+  items.push(button(won || !campaign ? (campaign ? 'Replay' : 'Rematch') : 'Retry', go.replay, 'btn btn-big'));
+  if (!campaign) items.push(button('Pick level', go.levels, 'btn btn-big'));
+  items.push(button('Menu', go.menu, 'btn btn-big'));
   el.append(banner, h('nav', 'menu menu-row', ...items));
-  return { el, focus: items[0], onKey: (code) => navigate(items, code) };
+  return { el, focus: items[0], onKey: (code) => !settled() || navigate(items, code) };
 }

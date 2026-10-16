@@ -3,7 +3,7 @@
 import { LEVELS } from '../../core/levels.js';
 import { isOpen, unlockedLevel } from '../storage.js';
 import { play } from '../audio.js';
-import { h, button, navigate, shell, lockIcon } from './dom.js';
+import { h, button, focusItem, navigate, shell, lockIcon } from './dom.js';
 import { levelThumb } from './thumbs.js';
 
 const COLS = 5;
@@ -22,7 +22,7 @@ function card(level, mode, start) {
   if (!open) art.append(lockIcon());
   if (beaten && mode === 'campaign') art.append(h('span', 'level-done', '✓'));
   c.append(art, h('div', 'level-meta', h('span', 'level-num', String(level.id)), h('span', 'level-name', level.name)));
-  c.addEventListener('pointerenter', () => c !== document.activeElement && (c.focus({ preventScroll: true }), play('menu')));
+  c.addEventListener('pointerenter', () => c !== document.activeElement && focusItem(c));
   c.addEventListener('click', () => {
     if (open) {
       play('select');
@@ -52,7 +52,7 @@ export function levelsScreen(mode, start, back) {
     onKey(code) {
       if (code === 'Escape') return back(), true;
       if (document.activeElement === backBtn && (code === 'ArrowUp' || code === 'KeyW')) {
-        cards[cards.length - 1].focus();
+        focusItem(cards[cards.length - 1]);
         return true;
       }
       return navigate(items, code, COLS);

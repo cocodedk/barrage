@@ -54,6 +54,7 @@ function fire(world, u, intents) {
 }
 
 // Apply the active human's intents (the AI produces the same shape) for one tick.
+// `cancel` drops a charge in progress without firing.
 export function applyIntents(world, intents, dt) {
   const turn = world.turn;
   const u = activeUnit(world);
@@ -61,6 +62,11 @@ export function applyIntents(world, intents, dt) {
   const move = { dir: (intents.right ? 1 : 0) - (intents.left ? 1 : 0), jump: !!intents.jump };
   if (turn.phase !== 'aim') return move; // retreating: walk and jump only
   if (intents.weapon !== undefined && intents.weapon !== null) chooseWeapon(turn, intents.weapon);
+  if (intents.cancel) { // the UI paused or lost focus mid-charge: drop the charge, never fire
+    turn.charging = false;
+    turn.power = 0;
+    return move;
+  }
   const aimMove = (intents.aimUp ? 1 : 0) - (intents.aimDown ? 1 : 0);
   u.aim = Math.max(-AIM_LIMIT, Math.min(AIM_LIMIT, u.aim + aimMove * AIM_RATE * dt));
   if (intents.charge) {

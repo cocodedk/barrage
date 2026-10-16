@@ -3,7 +3,7 @@
 import { LEVELS } from './core/levels.js';
 import { createInput, resetInput } from './ui/input.js';
 import { unlockAudio, toggleMute, play } from './ui/audio.js';
-import { unlockLevel, unlockedLevel } from './ui/storage.js';
+import { unlockedLevel } from './ui/storage.js';
 import { createMatch, stepMatch, drawMatch, forceWin } from './ui/game.js';
 import { createDebug } from './ui/debug.js';
 import { createScreens, toast } from './ui/screens/stage.js';
@@ -68,6 +68,7 @@ function startLevel(level, mode) {
 function pause() {
   const m = app.match;
   app.state = 'paused';
+  resetInput(input); // a charge in progress is dropped, not fired
   play('menu');
   stage.show(pauseScreen({
     levelName: `Level ${m.level.id} — ${m.level.name}`,
@@ -79,8 +80,6 @@ function pause() {
 
 function endRound(m) {
   const { winner } = m.world;
-  const campaign = m.mode === 'campaign';
-  if (campaign && winner === 0) unlockLevel(m.level.id + 1);
   app.state = 'roundend';
   stage.show(roundEndScreen({ mode: m.mode, level: m.level, winner, teams: m.world.teams }, {
     next: () => startLevel(LEVELS[m.level.id], m.mode),

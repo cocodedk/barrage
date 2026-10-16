@@ -35,8 +35,6 @@ export function unlockAudio() {
   }
 }
 
-export const isAudioMuted = () => muted;
-
 export function toggleMute() {
   muted = !muted;
   setMuted(muted);

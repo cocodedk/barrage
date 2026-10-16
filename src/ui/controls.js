@@ -78,6 +78,11 @@ export function humanIntents(c, input, world, view, cam, dt) {
   out.aimDown = held('down');
   if (aiming && !strike && m.moved && at) mouseAim(u, at);
 
+  if (input.cancelled) { // paused or unfocused mid-charge: drop it; firing needs a fresh press
+    c.armed = false;
+    out.cancel = true;
+    return out;
+  }
   if (aiming && (hit('fire') || m.pressed)) c.armed = true;
   const firing = held('fire') || m.down;
   if (c.armed && (firing || hit('fire') || m.pressed) && !w.instant) out.charge = true; // a tap is a weak shot

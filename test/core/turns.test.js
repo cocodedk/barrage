@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { POWER_RATE, RETREAT_TIME, TURN_TIME } from '../../src/core/turns.js';
-import { flatWorld, run, shoot, eventsOf } from './helpers.js';
+import { flatWorld, run, shoot, eventsOf, DT } from './helpers.js';
 
 const GROUND_PIT = 900;
 const me = (w) => w.teams[0].units[0];
@@ -109,4 +109,12 @@ test('a shell over the water splashes and is gone', () => {
   assert.equal(w.projectiles.length, 0);
   assert.equal(eventsOf(w, 'splash').length, 1);
   assert.equal(eventsOf(w, 'explosion').length, 0);
+});
+
+test('cancel drops a charge without firing', () => {
+  const w = flatWorld();
+  run(w, 0.5, { charge: true });
+  run(w, DT, { cancel: true, release: true });
+  assert.deepEqual([w.turn.charging, w.turn.power, w.turn.phase], [false, 0, 'aim']);
+  assert.equal(eventsOf(w, 'fire').length, 0);
 });

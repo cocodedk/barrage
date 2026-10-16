@@ -11,6 +11,7 @@ import { createView, drawFrame } from './view.js';
 import { play, soundForEvent } from './audio.js';
 import { createControls, humanIntents } from './controls.js';
 import { endTick } from './input.js';
+import { unlockLevel } from './storage.js';
 
 export const STEP = 1 / 60;
 const MAX_STEPS = 6; // per frame; beyond this the game slows instead of spiralling
@@ -41,6 +42,7 @@ function drain(m) {
     if (ev.type === 'crater') m.view.onCrater(ev.x, ev.y, ev.r);
     if (ev.type === 'turn') m.ai.plan = null;
     if (m.attract) continue;
+    if (ev.type === 'win' && m.mode === 'campaign' && ev.winner === 0) unlockLevel(m.level.id + 1); // saved now, not when the card shows
     if (ev.type === 'win') play(m.mode === 'campaign' && ev.winner !== 0 ? 'lose' : 'win'); // computer won: no fanfare
     else soundForEvent(ev);
   }
