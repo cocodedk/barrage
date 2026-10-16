@@ -7,7 +7,7 @@ const KEYS = [
   ['Enter', 'Jump'],
   ['Hold Space', 'Charge power, release to fire — or hold the mouse button'],
   ['Q E  or  1–6', 'Change weapon'],
-  ['Esc · M', 'Pause · Sound on/off'],
+  ['Esc · M', 'Pause (here: back to menu) · Sound on/off'],
 ];
 const WEAPONS = [
   ['Bazooka', 'Rocket that bends with the wind. Bursts on contact.'],

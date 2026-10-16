@@ -30,7 +30,7 @@ function rich(el, text) {
 
 // m: a match on the demo level. act: { campaign, menu } for the last card's buttons.
 export function demoScreen(m, act) {
-  const runner = createRunner(STEPS);
+  const runner = createRunner(STEPS, m.fx);
   m.pilot = pilotFor(runner);
   startStep(runner, m.world, 0);
   m.view.hud.key = '0:0'; // the turn never changes hands, so no "Blue team" banner over the caption
@@ -88,9 +88,9 @@ export function demoScreen(m, act) {
   }
 
   function onKey(code, e) {
+    if (code === 'Tab') e?.preventDefault(); // focus never wanders off with Tab
     if (buttons) return code === 'Escape' ? (act.menu(), true) : navigate(buttons, code);
     if (code === 'Tab') {
-      e?.preventDefault();
       skip(runner, m.world);
       return true;
     }
@@ -98,5 +98,6 @@ export function demoScreen(m, act) {
     return false; // play keys reach the match; Esc pauses it
   }
 
-  return { el, onKey, update };
+  // focus: the stage refocuses it when the screen comes back from pause (the final card's button)
+  return { el, onKey, update, get focus() { return buttons?.[0] ?? null; } };
 }

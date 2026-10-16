@@ -99,7 +99,7 @@ export const STEPS = [
   },
   {
     id: 'weapons', title: 'Weapons',
-    watch: 'Switch weapons with {Q} {E} or {1} – {6}. The bar at the bottom shows them all.',
+    watch: 'Switch weapons with {Q} {E} or {1} – {6}.',
     try: 'Pick the grenade: press {2}.',
     setup: (world) => { world.turn.weapon = 'bazooka'; },
     show: keys(3.2, [[0.5, 0.85, { weapon: 1, press: 'E' }], [1.3, 1.65, { weapon: 2, press: 'E' }],

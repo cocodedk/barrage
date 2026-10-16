@@ -23,7 +23,11 @@ export function place(world, u, x) {
   Object.assign(u, { x, y, vx: 0, vy: 0, onGround: true, peakY: y });
 }
 
-function revive(world, u) {
+const GRAVE_NEAR = { x: 30, y: 80 }; // a grave this close to where a soldier lies is his
+
+// Home, at full health. `fx` (optional): a fallen soldier's grave goes when he gets up again.
+function revive(world, u, fx) {
+  if (!u.alive && fx) fx.graves = fx.graves.filter((g) => Math.abs(g.x - u.x) > GRAVE_NEAR.x || Math.abs(g.y - u.y) > GRAVE_NEAR.y);
   place(world, u, HOME[u.team][world.teams[u.team].units.indexOf(u)]);
   Object.assign(u, { hp: 100, alive: true });
 }
@@ -45,13 +49,19 @@ export function arrange(world) {
   world.turn.weapon = 'bazooka';
 }
 
-// Between steps: no shells in the air, calm wind, the fallen back on their feet, a fresh turn.
-export function tidy(world) {
+// Between steps: no shells in the air, calm wind, a fresh turn, every soldier at full health
+// (the fallen back on their feet, without their graves) and the hero home, so each step's show
+// starts from the same place whatever the last try did.
+export function tidy(world, fx) {
   world.projectiles.length = 0;
   world.wind = 0;
   for (const team of world.teams) {
-    for (const u of team.units) if (!u.alive || u.y >= world.liquidY) revive(world, u);
+    for (const u of team.units) {
+      if (!u.alive || u.y >= world.liquidY || u === hero(world)) revive(world, u, fx);
+      else u.hp = 100;
+    }
   }
+  hero(world).facing = 1;
   freshTurn(world);
 }
 
@@ -61,11 +71,11 @@ export const calm = (world) => world.turn.phase === 'aim' && still(world);
 // Run after every tick: the turn never leaves the hero. When a shot has played out, he gets a
 // fresh aim phase instead of the core handing the turn to the other team. `clock` lets the
 // turn timer run down (the timer step); otherwise it is held full.
-export function holdTurn(world, clock = false) {
+export function holdTurn(world, clock = false, fx = null) {
   const turn = world.turn;
-  if (!hero(world).alive) revive(world, hero(world));
+  if (!hero(world).alive) revive(world, hero(world), fx);
   for (const team of world.teams) {
-    if (!team.units.some((u) => u.alive)) for (const u of team.units) revive(world, u);
+    if (!team.units.some((u) => u.alive)) for (const u of team.units) revive(world, u, fx);
   }
   turn.team = 0;
   turn.unit = 0;

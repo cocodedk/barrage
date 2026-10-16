@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { stepWorld } from '../../src/core/world.js';
 import { makeRng } from '../../src/core/rng.js';
-import { createRunner, startStep, skip, replay, runnerIntents, afterTick } from '../../src/ui/demo/runner.js';
+import { createRunner, startStep, skip, replay, runnerIntents, afterTick, pilotFor } from '../../src/ui/demo/runner.js';
+import { createControls } from '../../src/ui/controls.js';
+import { newInputState, endTick } from '../../src/ui/input.js';
 import { hero } from '../../src/ui/demo/scene.js';
 import { flatWorld, DT } from '../core/helpers.js';
 
@@ -84,4 +86,34 @@ test('the turn stays with the player: a shot that lands hands back a fresh aim p
   assert.ok(sawFlight);
   assert.equal(r.i, 1);
   assert.deepEqual([w.turn.phase, w.turn.shotsFired, w.winner], ['aim', 0, null]);
+});
+
+test('Space held through a skip does not charge in the next try without a fresh press', () => {
+  const tryStep = { id: 'try', show: () => null, check: () => false };
+  const w = flatWorld();
+  const r = createRunner([tryStep, tryStep]);
+  const m = { world: w, controls: createControls(), view: { cursor: null }, cam: null };
+  const pilot = pilotFor(r);
+  const input = newInputState();
+  const rng = makeRng(5);
+  const tick = (n) => {
+    for (let i = 0; i < n; i++) {
+      const out = pilot.intents(m, input, DT);
+      endTick(input);
+      stepWorld(w, DT, out, rng);
+      pilot.after(m, DT);
+      w.events.length = 0;
+    }
+  };
+  startStep(r, w, 0);
+  tick(60);
+  assert.equal(r.phase, 'try');
+  input.down.add('Space');
+  input.pressed.add('Space');
+  tick(20);
+  assert.ok(w.turn.charging);
+  skip(r, w); // Tab mid-charge
+  tick(60);
+  assert.deepEqual([r.i, r.phase], [1, 'try']);
+  assert.deepEqual([w.turn.charging, w.turn.power], [false, 0]);
 });

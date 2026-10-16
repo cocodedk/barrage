@@ -105,3 +105,13 @@ test('a cancelled mouse press drops its charge; the next press starts from zero'
   assert.equal(eventsOf(s.w, 'fire').length, 1);
   assert.ok(s.w.turn.power < 0.2, `fired from ${s.w.turn.power}, not the stale charge`);
 });
+
+test('a stray pointercancel with the mouse button up leaves a keyboard charge alone', () => {
+  const s = setup();
+  s.press();
+  s.tick(30);
+  const power = s.w.turn.power;
+  cancelPointer(s.input);
+  s.tick();
+  assert.ok(s.w.turn.charging && s.w.turn.power > power);
+});

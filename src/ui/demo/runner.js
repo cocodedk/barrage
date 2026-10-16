@@ -11,14 +11,15 @@ const WATCH_BEAT = 1.2; // s of calm after a watch-only show before the next ste
 const DONE_BEAT = 1.4; // s of calm after the player did it
 const LIT = { left: '←', right: '→', aimUp: '↑', aimDown: '↓', jump: 'Enter', charge: 'Space', release: 'Space' };
 
-export function createRunner(steps) {
-  return { steps, i: 0, phase: 'show', t: 0, wait: 0, ended: false, state: {}, lit: [] };
+// fx (optional): the match's effects, so a revived soldier's grave can be cleared.
+export function createRunner(steps, fx = null) {
+  return { steps, fx, i: 0, phase: 'show', t: 0, wait: 0, ended: false, state: {}, lit: [] };
 }
 
 export function startStep(r, world, i) {
   const step = r.steps[i];
   Object.assign(r, { i, phase: step.final ? 'final' : 'show', t: 0, wait: 0, ended: false, state: {}, lit: [] });
-  tidy(world);
+  tidy(world, r.fx);
   step.setup?.(world, r.state);
 }
 
@@ -45,7 +46,7 @@ export function runnerIntents(r, world, dt, player) {
 // After the world stepped: keep the turn on the player, check the try, advance when it is time.
 export function afterTick(r, world, events, dt) {
   const step = r.steps[r.i];
-  holdTurn(world, !!step.clock && r.phase === 'show');
+  holdTurn(world, !!step.clock && r.phase === 'show', r.fx);
   r.wait = calm(world) ? r.wait + dt : 0;
   if (r.phase === 'show' && r.ended) {
     if (r.wait < (step.check ? TRY_BEAT : WATCH_BEAT)) return;
@@ -65,6 +66,7 @@ export function pilotFor(r, player = (m, input, dt) => humanIntents(m.controls, 
   return {
     runner: r,
     intents(m, input, dt) {
+      if (r.phase !== 'try') m.controls.armed = false; // a Space held into the next try needs a fresh press
       const out = runnerIntents(r, m.world, dt, () => (input ? player(m, input, dt) : {}));
       if (r.phase !== 'try') m.view.cursor = out.marker != null ? markerAt(m.world, out.marker) : null;
       return out;

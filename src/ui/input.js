@@ -69,8 +69,10 @@ export function createInput(canvas) {
 }
 
 // The browser took the pointer away mid-press: no release edge, and the charge it was building
-// is dropped (like a pause), so a later press never carries it on.
+// is dropped (like a pause), so a later press never carries it on. A stray cancel while the
+// button is up leaves a keyboard charge alone.
 export function cancelPointer(input) {
+  if (!input.mouse.down) return;
   input.mouse.down = false;
   input.cancelled = true;
 }
