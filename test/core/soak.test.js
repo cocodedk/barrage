@@ -1,12 +1,12 @@
-// AI-vs-AI soak: whole seeded matches on every kind of level, played with the same plan/intents
-// loop as game.js. No soldier may hang (not at rest, going nowhere) and every match must end.
+// AI-vs-AI soak: whole seeded matches on every kind of level, played with the real aiTick
+// loop of game.js. No soldier may hang (not at rest, going nowhere) and every match must end.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { makeRng } from '../../src/core/rng.js';
 import { LEVELS } from '../../src/core/levels.js';
 import { createWorld, stepWorld } from '../../src/core/world.js';
 import { unitAtRest } from '../../src/core/units.js';
-import { aiPlan, aiIntents } from '../../src/core/ai.js';
+import { aiTick } from '../../src/core/ai.js';
 import { DT } from './helpers.js';
 
 const SKILL = 0.75; // the title screen's attract matches
@@ -19,23 +19,15 @@ function soak(level, seed) {
   const world = createWorld(level, 'versus', rng);
   for (const t of world.teams) t.ai = { skill: SKILL };
   const hang = new Map(); // unit id -> { x, y, s }
-  let plan = null;
-  let elapsed = 0;
+  const ai = { plan: null, elapsed: 0 };
   let turns = 0;
   let worst = { s: 0 };
   let time = 0;
   for (; world.winner == null && time < MAX_GAME_TIME; time += DT) {
-    const phase = world.turn.phase;
-    if (phase === 'aim' && !plan) {
-      plan = aiPlan(world, rng);
-      elapsed = 0;
-    }
-    let intents = {};
-    if (plan && (phase === 'aim' || phase === 'retreat')) intents = aiIntents(plan, (elapsed += DT), world);
-    stepWorld(world, DT, intents, rng);
+    stepWorld(world, DT, aiTick(ai, world, DT, rng), rng);
     for (const ev of world.events) {
       if (ev.type !== 'turn') continue;
-      plan = null;
+      ai.plan = null;
       turns++;
     }
     world.events.length = 0;

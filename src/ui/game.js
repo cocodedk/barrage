@@ -3,7 +3,7 @@
 // (slow motion). Events drain every tick into fx, audio and the terrain canvas.
 import { createWorld, stepWorld, TICK } from '../core/world.js';
 import { endMatch } from '../core/turns.js';
-import { aiPlan, aiIntents } from '../core/ai.js';
+import { aiTick } from '../core/ai.js';
 import { inFlight } from '../core/weapons.js';
 import { makeRng } from '../core/rng.js';
 import { createFx, stepFx } from '../fx/fx.js';
@@ -69,25 +69,12 @@ function drain(m) {
   world.events.length = 0;
 }
 
-// The computer's intents: plan once when its aim phase starts, then play the plan out.
-function aiTick(m, dt) {
-  const { world, ai } = m;
-  const phase = world.turn.phase;
-  if (phase === 'aim' && !ai.plan) {
-    ai.plan = aiPlan(world, m.rng);
-    ai.elapsed = 0;
-  }
-  if (!ai.plan || (phase !== 'aim' && phase !== 'retreat')) return {};
-  ai.elapsed += dt;
-  return aiIntents(ai.plan, ai.elapsed, world);
-}
-
 function tick(m, input, dt) {
   const { world } = m;
   let intents = {};
   if (world.winner == null) {
     if (m.pilot) intents = m.pilot.intents(m, input, dt); // the demo: its script, or the player
-    else if (world.teams[world.turn.team].ai) intents = aiTick(m, dt);
+    else if (world.teams[world.turn.team].ai) intents = aiTick(m.ai, world, dt, m.rng);
     else if (input) intents = humanIntents(m.controls, input, world, m.view, m.cam, dt);
   }
   m.view.cursor = intents.marker ?? null; // the airstrike target, while one is being aimed
@@ -109,7 +96,6 @@ export function stepMatch(m, realDt, input) {
   if (n === MAX_STEPS) m.acc = 0;
   stepFx(m.fx, realDt, m.world.terrain);
   if (m.world.winner != null) m.overTime += realDt;
-  return n;
 }
 
 export function drawMatch(m, realDt, t) {

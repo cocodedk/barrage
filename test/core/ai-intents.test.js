@@ -5,7 +5,7 @@ import { makeRng } from '../../src/core/rng.js';
 import { LEVELS } from '../../src/core/levels.js';
 import { createWorld, stepWorld } from '../../src/core/world.js';
 import { TURN_TIME } from '../../src/core/turns.js';
-import { aiPlan, aiIntents } from '../../src/core/ai.js';
+import { aiPlan, aiIntents, aiTick } from '../../src/core/ai.js';
 import { duel } from './ai-helpers.js';
 import { DT } from './helpers.js';
 
@@ -59,17 +59,14 @@ test('computer vs computer plays turns to a result on every level', () => {
     const w = createWorld({ ...level, aiSkill: 0.8 }, 'campaign', makeRng(level.name.length));
     w.teams[0].ai = { skill: 0.8 };
     const rng = makeRng(3);
-    let plan = null;
-    let aimStart = 0;
+    const ai = { plan: null, elapsed: 0 };
     for (let tick = 0; tick < 60 * 60 * 15 && w.turn.phase !== 'over'; tick++) {
-      if (w.turn.phase === 'aim' && w.turn.timeLeft >= TURN_TIME - 1e-9) {
-        const t0 = performance.now();
-        plan = aiPlan(w, rng);
-        slowest = Math.max(slowest, performance.now() - t0);
-        aimStart = tick;
-      }
-      const intents = plan ? aiIntents(plan, (tick - aimStart) * DT, w) : {};
+      const t0 = performance.now();
+      const intents = aiTick(ai, w, DT, rng);
+      if (ai.elapsed === DT) slowest = Math.max(slowest, performance.now() - t0); // the tick that planned
       stepWorld(w, DT, intents, rng);
+      for (const ev of w.events) if (ev.type === 'turn') ai.plan = null;
+      w.events.length = 0;
     }
     finished += w.turn.phase === 'over' ? 1 : 0;
   }
