@@ -35,10 +35,19 @@ test('src/core and src/fx stay pure: no window, document, Math.random or Date.no
   }
 });
 
+// index.html may name its own public address in metadata the browser never fetches: name/property
+// <meta> tags, rel="canonical" and the JSON-LD block. Any other external URL would be a request.
+const INERT = [
+  /<meta (?:name|property)="[^"]*" content="[^"]*">/g,
+  /<link rel="canonical" href="[^"]*">/g,
+  /<script type="application\/ld\+json">[\s\S]*?<\/script>/g,
+];
+
 test('index.html and src contain no external URLs', () => {
   const files = [...walk(join(root, 'src')), join(root, 'index.html')];
   for (const f of files) {
-    const text = readFileSync(f, 'utf8');
+    let text = readFileSync(f, 'utf8');
+    if (f.endsWith('index.html')) for (const re of INERT) text = text.replace(re, '');
     for (const s of SCHEME) assert.ok(!text.includes(s), `${f} contains ${s}`);
   }
 });
