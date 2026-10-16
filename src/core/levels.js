@@ -13,7 +13,6 @@ import { LEVELS_LATE } from './levels-2.js';
 //   windMax   largest horizontal wind acceleration, px/s^2 (wind is rolled in [-max, max])
 //   friction  ground grip 0..1: 1 stops a sliding soldier at once, 0 is ice
 //   drag      fraction of projectile speed lost per second (water is thick)
-//   ambient   particle kind the renderer rains over the level
 //   aiSkill   0..1, the computer's accuracy and weapon sense
 //   pixel     true: render chunky (level 12 only)
 const EARLY = [
@@ -28,7 +27,7 @@ const EARLY = [
     terrain: { base: 0.62, amp: 90, octaves: 3, roughness: 0.45, cells: 4 },
     fill: ['#7b5233', '#3b2515'], edge: '#72e24c',
     liquid: { kind: 'water', color: '#2a8fd6', y: 1020 },
-    gravity: 600, windMax: 20, friction: 0.85, drag: 0.02, ambient: 'none', aiSkill: 0.25,
+    gravity: 600, windMax: 20, friction: 0.85, drag: 0.02, aiSkill: 0.25,
   },
   {
     id: 2, name: 'Desert Sunset',
@@ -42,7 +41,7 @@ const EARLY = [
       waves: { n: 3, amp: 50 }, platforms: { count: 2, w: [180, 300], y: [380, 520], thick: 28 } },
     fill: ['#dba45c', '#8a5a2b'], edge: '#ffe39a',
     liquid: { kind: 'water', color: '#2f7fa8', y: 1025 },
-    gravity: 600, windMax: 45, friction: 0.75, drag: 0.02, ambient: 'none', aiSkill: 0.3,
+    gravity: 600, windMax: 45, friction: 0.75, drag: 0.02, aiSkill: 0.3,
   },
   {
     id: 3, name: 'Autumn Forest',
@@ -56,7 +55,7 @@ const EARLY = [
       caves: { count: 2, r: [40, 60], depth: [90, 200] } },
     fill: ['#6b4226', '#2e1a0e'], edge: '#e98a2c',
     liquid: { kind: 'water', color: '#3d6f7a', y: 1020 },
-    gravity: 600, windMax: 55, friction: 0.8, drag: 0.02, ambient: 'leaves', aiSkill: 0.35,
+    gravity: 600, windMax: 55, friction: 0.8, drag: 0.02, aiSkill: 0.35,
   },
   {
     id: 4, name: 'Arctic',
@@ -69,7 +68,7 @@ const EARLY = [
     terrain: { base: 0.64, amp: 100, octaves: 3, roughness: 0.4, cells: 3 },
     fill: ['#eef8ff', '#9cc4e4'], edge: '#ffffff',
     liquid: { kind: 'water', color: '#1f6fa0', y: 1020 },
-    gravity: 600, windMax: 60, friction: 0.12, drag: 0.02, ambient: 'snow', aiSkill: 0.4,
+    gravity: 600, windMax: 60, friction: 0.12, drag: 0.02, aiSkill: 0.4,
   },
   {
     id: 5, name: 'Jungle',
@@ -84,7 +83,7 @@ const EARLY = [
       platforms: { count: 3, w: [140, 240], y: [360, 520], thick: 24 } },
     fill: ['#5a3d22', '#25170c'], edge: '#7de05a',
     liquid: { kind: 'water', color: '#2c6b4a', y: 1020 },
-    gravity: 600, windMax: 30, friction: 0.7, drag: 0.03, ambient: 'fireflies', aiSkill: 0.45,
+    gravity: 600, windMax: 30, friction: 0.7, drag: 0.03, aiSkill: 0.45,
   },
   {
     id: 6, name: 'Neon City',
@@ -97,7 +96,7 @@ const EARLY = [
       platforms: { count: 4, w: [160, 280], y: [380, 560], thick: 30 } },
     fill: ['#1a1440', '#0a0818'], edge: '#00f0ff',
     liquid: { kind: 'water', color: '#ff2d95', y: 1020 },
-    gravity: 600, windMax: 35, friction: 0.8, drag: 0.02, ambient: 'rain', aiSkill: 0.5,
+    gravity: 600, windMax: 35, friction: 0.8, drag: 0.02, aiSkill: 0.5,
   },
   {
     id: 7, name: 'Candy Land',
@@ -111,7 +110,7 @@ const EARLY = [
       waves: { n: 5, amp: 70 } },
     fill: ['#ff9ad5', '#b8479a'], edge: '#ffffff',
     liquid: { kind: 'water', color: '#ff5fb8', y: 1025 },
-    gravity: 600, windMax: 40, friction: 0.7, drag: 0.02, ambient: 'fireflies', aiSkill: 0.55,
+    gravity: 600, windMax: 40, friction: 0.7, drag: 0.02, aiSkill: 0.55,
   },
   {
     id: 8, name: 'Haunted Graveyard',
@@ -125,7 +124,7 @@ const EARLY = [
       caves: { count: 2, r: [40, 60], depth: [90, 200] } },
     fill: ['#3b3350', '#15121f'], edge: '#9a8bc4',
     liquid: { kind: 'water', color: '#2e3a5c', y: 1020 },
-    gravity: 600, windMax: 35, friction: 0.8, drag: 0.03, ambient: 'fog', aiSkill: 0.6,
+    gravity: 600, windMax: 35, friction: 0.8, drag: 0.03, aiSkill: 0.6,
   },
 ];
 

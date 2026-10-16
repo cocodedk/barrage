@@ -1,7 +1,7 @@
 // Heads-up display in the logical 1920 x 1080 frame, sized to read from across a room:
 // team HP panels, turn timer, wind, weapon bar (keys 1-6), power meter, turn banner.
 import { W, H, INK, rgba, shade, roundRect } from './sprites.js';
-import { WEAPONS } from '../core/weapons.js';
+import { WEAPONS, weaponById } from '../core/weapons.js';
 import { drawIcon } from './hud-icons.js';
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -44,9 +44,10 @@ function teamPanel(ctx, team, active, right) {
   const edge = right ? x + w - 22 : x + 22;
   text(ctx, team.name, edge, 58, 28, '#ffffff', side, 900);
   text(ctx, String(Math.ceil(hp)), right ? x + 22 : x + w - 22, 58, 28, shade(team.color, 0.4), right ? 'left' : 'right', 900);
+  const nameW = ctx.measureText(team.name).width;
   team.units.forEach((u, i) => {
     ctx.beginPath();
-    const px = right ? x + w - 22 - ctx.measureText(team.name).width - 26 - i * 20 : x + 22 + ctx.measureText(team.name).width + 26 + i * 20;
+    const px = right ? x + w - 22 - nameW - 26 - i * 20 : x + 22 + nameW + 26 + i * 20;
     ctx.arc(px, 49, 7, 0, Math.PI * 2);
     ctx.fillStyle = u.alive ? team.color : 'rgba(255,255,255,0.18)';
     ctx.fill();
@@ -129,12 +130,12 @@ function weaponBar(ctx, world, color) {
       ctx.fill();
     }
     ctx.globalAlpha = locked ? 0.35 : 1;
-    drawIcon(ctx, w.icon, x + size / 2, yy + size / 2 + 4, 58);
+    drawIcon(ctx, w.id, x + size / 2, yy + size / 2 + 4, 58);
     text(ctx, String(i + 1), x + 12, yy + 20, 18, sel ? '#ffffff' : 'rgba(255,255,255,0.6)', 'left', 900);
     ctx.globalAlpha = 1;
   });
-  const cur = WEAPONS.find((w) => w.id === turn.weapon);
-  if (!turn.charging && cur) {
+  const cur = weaponById(turn.weapon);
+  if (!turn.charging) {
     const shots = turn.shotsLeft > 1 ? `  ×${turn.shotsLeft}` : '';
     text(ctx, cur.name + shots, W / 2, y - 34, 26, '#ffffff', 'center', 900);
   }
@@ -164,7 +165,7 @@ function banner(ctx, world, hud, t) {
   const team = world.teams[world.turn.team];
   const y = -60 + ease(Math.min(1, age / BANNER_IN)) * 330;
   ctx.globalAlpha = age > total - BANNER_OUT ? (total - age) / BANNER_OUT : 1;
-  const main = `${COLOR_NAMES[team.id] ?? 'Team ' + (team.id + 1)} team — Soldier ${world.turn.unit + 1}`;
+  const main = `${COLOR_NAMES[team.id]} team — Soldier ${world.turn.unit + 1}`;
   ctx.font = `900 50px ${FONT}`;
   const w = ctx.measureText(main).width + 120;
   panel(ctx, W / 2 - w / 2, y - 56, w, 112, rgba(team.color, 0.95), 24);

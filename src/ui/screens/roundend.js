@@ -25,7 +25,7 @@ export function roundEndScreen(o, act) {
   const go = Object.fromEntries(Object.entries(act).map(([k, fn]) => [k, () => settled() && fn()]));
   const campaign = o.mode === 'campaign';
   const draw = o.winner === 'draw';
-  const won = !draw && (campaign ? o.winner === 0 : true);
+  const won = !draw && (!campaign || o.winner === 0);
   const last = o.level.id === LEVELS.length;
   let title;
   if (draw) title = 'Draw!';
@@ -36,15 +36,14 @@ export function roundEndScreen(o, act) {
       : campaign ? 'The computer holds the field. Try again?' : o.level.name;
   const el = shell(`roundend dim ${won ? 'won' : 'lost'}`);
   if (won) el.append(confetti());
-  const color = !draw && !campaign ? o.teams[o.winner].color : null;
   const banner = h('div', 'banner', h('h2', 'banner-title', title), h('p', 'sub', sub));
-  if (color) {
+  if (!draw && !campaign) {
     banner.classList.add('team');
-    banner.style.setProperty('--team', color);
+    banner.style.setProperty('--team', o.teams[o.winner].color);
   }
   const items = [];
   if (campaign && won && !last) items.push(button('Next level', go.next, 'btn btn-big'));
-  items.push(button(won || !campaign ? (campaign ? 'Replay' : 'Rematch') : 'Retry', go.replay, 'btn btn-big'));
+  items.push(button(!campaign ? 'Rematch' : won ? 'Replay' : 'Retry', go.replay, 'btn btn-big'));
   if (!campaign) items.push(button('Pick level', go.levels, 'btn btn-big'));
   items.push(button('Menu', go.menu, 'btn btn-big'));
   el.append(banner, h('nav', 'menu menu-row', ...items));

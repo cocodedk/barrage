@@ -5,9 +5,9 @@ import { hurt, deathEvent } from './explode.js';
 import { clamp } from './math.js';
 
 export const WALK_SPEED = 90; // px/s
-export const JUMP_HEIGHT = 70; // px, kept under the safe fall height
-export const SAFE_FALL = 80; // px of drop before it hurts
-export const FALL_DAMAGE = 0.4; // hp per px beyond the safe height
+const JUMP_HEIGHT = 70; // px, kept under the safe fall height
+const SAFE_FALL = 80; // px of drop before it hurts
+const FALL_DAMAGE = 0.4; // hp per px beyond the safe height
 export const AIM_LIMIT = Math.PI / 2;
 const AT_REST = 5; // px/s under which a soldier counts as still
 const STEP_DOWN = 2; // px a walker follows the ground down per move

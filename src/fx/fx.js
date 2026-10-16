@@ -9,8 +9,8 @@
 // stepFx takes real frame time. Particles and rings follow timeScale so slow motion shows.
 import { stepParticles } from './particles.js';
 
-export const SLOWMO_SCALE = 0.3;
-export const SLOWMO_TIME = 1; // real seconds
+const SLOWMO_SCALE = 0.3;
+const SLOWMO_TIME = 1; // real seconds
 const SHAKE_DECAY = 5; // exp rate per second
 const SHAKE_MIN = 0.1; // px, below this the shake snaps to 0
 

@@ -1,8 +1,8 @@
 // Projectile physics. stepProjectile advances only `proj` (and sets proj.bounced on a bounce):
 // it never carves, damages or pushes events, so the AI can run it to simulate shots.
-export const SUB_STEP = 4; // max px travelled between collision checks
+const SUB_STEP = 4; // max px travelled between collision checks
 export const UNIT_HALF_W = 6;
-export const UNIT_H = 20;
+const UNIT_H = 20;
 const REST_SPEED = 25; // a bounce slower than this leaves the projectile at rest
 const BOUNCE_EVENT_SPEED = 60; // quieter impacts do not count as a bounce
 const TANGENT_KEEP = 0.85;

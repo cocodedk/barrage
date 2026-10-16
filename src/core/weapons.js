@@ -14,12 +14,12 @@ const MISSILE_SPEED = 300;
 // `restitution` > 0 makes a bouncer; `windy` shells feel the wind; `instant` weapons fire the
 // moment Space is released, with no power charge; `shots` per turn.
 export const WEAPONS = [
-  { id: 'bazooka', name: 'Bazooka', icon: 'bazooka', r: 40, damage: 50, fuse: null, restitution: 0, windy: true, instant: false, shots: 1 },
-  { id: 'grenade', name: 'Grenade', icon: 'grenade', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
-  { id: 'cluster', name: 'Cluster Bomb', icon: 'cluster', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
-  { id: 'airstrike', name: 'Airstrike', icon: 'airstrike', r: 25, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 1 },
-  { id: 'shotgun', name: 'Shotgun', icon: 'shotgun', r: 8, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 2 },
-  { id: 'dynamite', name: 'Dynamite', icon: 'dynamite', r: 70, damage: 75, fuse: 4, restitution: 0.2, windy: false, instant: true, shots: 1 },
+  { id: 'bazooka', name: 'Bazooka', r: 40, damage: 50, fuse: null, restitution: 0, windy: true, instant: false, shots: 1 },
+  { id: 'grenade', name: 'Grenade', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
+  { id: 'cluster', name: 'Cluster Bomb', r: 40, damage: 45, fuse: 3, restitution: 0.5, windy: false, instant: false, shots: 1 },
+  { id: 'airstrike', name: 'Airstrike', r: 25, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 1 },
+  { id: 'shotgun', name: 'Shotgun', r: 8, damage: 25, fuse: null, restitution: 0, windy: false, instant: true, shots: 2 },
+  { id: 'dynamite', name: 'Dynamite', r: 70, damage: 75, fuse: 4, restitution: 0.2, windy: false, instant: true, shots: 1 },
 ];
 export const BOMBLET = { kind: 'bomblet', r: 20, damage: 20, count: 5 };
 

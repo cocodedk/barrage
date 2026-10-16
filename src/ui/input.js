@@ -57,7 +57,6 @@ export function createInput(canvas) {
     if (m.down && !(e.buttons & 1)) release(); // its pointerup went missing: the button is up
   });
   canvas.addEventListener('pointerdown', (e) => {
-    gesture();
     if (e.button !== 0) return;
     Object.assign(m, { x: e.clientX, y: e.clientY, seen: true, moved: true, down: true, pressed: true });
     try {

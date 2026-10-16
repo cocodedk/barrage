@@ -38,11 +38,11 @@ export function trimSpec(look, level) {
   };
 }
 
-// Recolour `o` if pixel (x, y) at depth d lies in the trim band. Returns true if it did.
+// Recolour `o` if pixel (x, y) at depth d lies in the trim band.
 export function trimPixel(o, T, x, y, d) {
   let lo = T.depth[0] + (T.depth[1] - T.depth[0]) * noise2(x, 0, 23);
   if (T.drips && hash(x >> 3) > 0.72) lo += 8 + hash((x >> 3) + 99) * 26 * Math.sin(((x & 7) / 8) * Math.PI);
-  if (d > lo || (T.gap && d < T.gap)) return false;
+  if (d > lo || (T.gap && d < T.gap)) return;
   const u = d / lo;
   for (let i = 0; i < 3; i++) o[i] = T.lightRgb[i] + (T.darkRgb[i] - T.lightRgb[i]) * u;
   if (T.speck && hash2(x >> 1, y >> 1) > (T.drips ? 0.96 : 0.6)) {
@@ -51,7 +51,6 @@ export function trimPixel(o, T, x, y, d) {
     o[1] = c[1];
     o[2] = c[2];
   }
-  return true;
 }
 
 function put(data, w, h, m, x, y, c) {

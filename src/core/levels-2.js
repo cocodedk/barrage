@@ -11,7 +11,7 @@ export const LEVELS_LATE = [
     terrain: { base: 0.6, amp: 170, octaves: 4, roughness: 0.55, cells: 4 },
     fill: ['#5b646e', '#262c33'], edge: '#a6bccd',
     liquid: { kind: 'water', color: '#2c5876', y: 1020 },
-    gravity: 600, windMax: 170, friction: 0.7, drag: 0.04, ambient: 'rain', aiSkill: 0.65,
+    gravity: 600, windMax: 170, friction: 0.7, drag: 0.04, aiSkill: 0.65,
   },
   {
     id: 10, name: 'Underwater Reef',
@@ -25,7 +25,7 @@ export const LEVELS_LATE = [
       caves: { count: 3, r: [35, 55], depth: [80, 210] } },
     fill: ['#e8826a', '#7a3b4a'], edge: '#ffd9ae',
     liquid: { kind: 'water', color: '#0b5a8c', y: 1015 },
-    gravity: 480, windMax: 25, friction: 0.6, drag: 0.8, ambient: 'bubbles', aiSkill: 0.7,
+    gravity: 480, windMax: 25, friction: 0.6, drag: 0.8, aiSkill: 0.7,
   },
   {
     id: 11, name: 'Volcano',
@@ -39,7 +39,7 @@ export const LEVELS_LATE = [
       caves: { count: 2, r: [40, 60], depth: [100, 220] } },
     fill: ['#3d2520', '#140a08'], edge: '#ff7a2a',
     liquid: { kind: 'lava', color: '#ff5a14', y: 1000 },
-    gravity: 620, windMax: 50, friction: 0.75, drag: 0.03, ambient: 'embers', aiSkill: 0.75,
+    gravity: 620, windMax: 50, friction: 0.75, drag: 0.03, aiSkill: 0.75,
   },
   {
     id: 12, name: 'Pixel Retro', pixel: true,
@@ -53,7 +53,7 @@ export const LEVELS_LATE = [
       platforms: { count: 3, w: [128, 256], y: [380, 540], thick: 32 } },
     fill: ['#c47a3a', '#6e3d1c'], edge: '#5ae04a',
     liquid: { kind: 'water', color: '#2a46e0', y: 1024 },
-    gravity: 600, windMax: 70, friction: 0.8, drag: 0.02, ambient: 'pixels', aiSkill: 0.8,
+    gravity: 600, windMax: 70, friction: 0.8, drag: 0.02, aiSkill: 0.8,
   },
   {
     id: 13, name: 'Glacier Canyon',
@@ -68,7 +68,7 @@ export const LEVELS_LATE = [
       islands: { count: 4, y: [380, 640], rx: [90, 170], ry: [40, 70] } },
     fill: ['#d6eeff', '#6fa5d6'], edge: '#ffffff',
     liquid: { kind: 'water', color: '#17508c', y: 1030 },
-    gravity: 600, windMax: 80, friction: 0.3, drag: 0.02, ambient: 'snow', aiSkill: 0.85,
+    gravity: 600, windMax: 80, friction: 0.3, drag: 0.02, aiSkill: 0.85,
   },
   {
     id: 14, name: 'Moon',
@@ -81,7 +81,7 @@ export const LEVELS_LATE = [
       caves: { count: 5, r: [40, 70], depth: [0, 30] } },
     fill: ['#a0a0ae', '#4a4a58'], edge: '#eeeef8',
     liquid: { kind: 'water', color: '#1c2a4a', y: 1040 },
-    gravity: 160, windMax: 0, friction: 0.6, drag: 0, ambient: 'stars', aiSkill: 0.9,
+    gravity: 160, windMax: 0, friction: 0.6, drag: 0, aiSkill: 0.9,
   },
   {
     id: 15, name: 'Ember Sky Finale',
@@ -96,6 +96,6 @@ export const LEVELS_LATE = [
       islands: { count: 3, y: [300, 520], rx: [80, 140], ry: [40, 60] } },
     fill: ['#2c1219', '#0f0508'], edge: '#ff4d2d',
     liquid: { kind: 'lava', color: '#ff3d0a', y: 1010 },
-    gravity: 600, windMax: 180, friction: 0.75, drag: 0.03, ambient: 'embers', aiSkill: 0.95,
+    gravity: 600, windMax: 180, friction: 0.75, drag: 0.03, aiSkill: 0.95,
   },
 ];

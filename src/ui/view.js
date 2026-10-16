@@ -3,8 +3,6 @@
 //   createView(canvas, level, world) -> view
 //   drawFrame(view, world, fx, camera, t)   t: seconds, any monotonic clock
 //   view.onCrater(x, y, r)                  cut a crater the core already carved
-//   rebuildTerrain(view, world)             new match on the same level: re-bake terrain and
-//                                           parallax, reset banner, trails, squash, drift
 //   replayTerrain(view, world)              same seed again: restore the kept bake, no re-bake
 //   view.cursor = { x, y } | null           airstrike target (world px), from the input layer
 // The canvas is sized to its CSS box; the 1920 x 1080 world is letterboxed into it, and the
@@ -22,9 +20,6 @@ import { drawProjectiles } from './projectiles-view.js';
 import { drawFx, drawFlashTint } from './fx-view.js';
 import { drawHud } from './hud.js';
 
-const HOME = { x: W / 2, y: H / 2, zoom: 1 };
-const NO_FX = { particles: [], rings: [], flashes: [], floaters: [], graves: [], shakeX: 0, shakeY: 0 };
-
 // keepBake: hold a copy of the fresh terrain bake so replayTerrain can restore it (the title battle).
 export function createView(canvas, level, world, keepBake = false) {
   const look = lookFor(level);
@@ -39,9 +34,9 @@ export function createView(canvas, level, world, keepBake = false) {
   return v;
 }
 
-// Start over on a new world of the same level (a new match): re-bake the terrain and the
-// parallax (its horizon follows the new ground) and forget every per-match visual state.
-export function rebuildTerrain(v, world, keepBake = false) {
+// Bake the terrain and the parallax (its horizon follows the ground) and reset every
+// per-match visual state.
+function rebuildTerrain(v, world, keepBake = false) {
   v.layers = buildLayers(v.level, v.look, horizonOf(world.terrain));
   v.terrain = bakeTerrain(world.terrain, v.level, v.look);
   v.pristine = null;
@@ -118,11 +113,10 @@ function backdrop(g, v, cam, fx, t) {
   g.restore();
 }
 
-export function drawFrame(v, world, fx = NO_FX, cam = HOME, t = 0) {
+export function drawFrame(v, world, fx, cam, t = 0) {
   const dt = v.lastT == null ? 0 : Math.min(0.1, Math.max(0, t - v.lastT));
   v.lastT = t;
   v.now = t;
-  v.world = world;
   v.drift += (world.wind || 0) * dt * 0.9;
   const f = fit(v);
   const ctx = v.ctx;

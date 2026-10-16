@@ -4,6 +4,7 @@
 import { INK_SOFT, rgba, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
 import { aimDir, MISSILES, MISSILE_GAP } from '../core/weapons.js';
+import { activeUnit } from '../core/turns.js';
 
 const RETICLE = 92;
 const POWER = ['#5aff7a', '#ffe14a', '#ff4a3a'];
@@ -139,8 +140,9 @@ function target(ctx, c, color, t) {
 export function drawUnits(ctx, v, world, fx, t, dt) {
   for (const g of fx.graves) drawGrave(ctx, g.x, g.y);
   const turn = world.turn;
-  const active = world.teams[turn.team]?.units[turn.unit];
-  const showAim = active?.alive && turn.phase === 'aim';
+  const active = activeUnit(world);
+  const color = world.teams[turn.team].color;
+  const showAim = active.alive && turn.phase === 'aim';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const team of world.teams) {
@@ -153,9 +155,9 @@ export function drawUnits(ctx, v, world, fx, t, dt) {
   for (const team of world.teams) for (const u of team.units) if (u.alive) label(ctx, u, team.color);
   if (showAim && turn.weapon !== 'airstrike') aim(ctx, active, turn, t);
   if (showAim && turn.weapon === 'airstrike' && v.cursor) {
-    target(ctx, v.cursor, world.teams[turn.team].color, t);
+    target(ctx, v.cursor, color, t);
   }
-  if (active?.alive && (showAim || turn.phase === 'retreat')) {
-    marker(ctx, active, shade(world.teams[turn.team].color, 0.1), t);
+  if (active.alive && (showAim || turn.phase === 'retreat')) {
+    marker(ctx, active, shade(color, 0.1), t);
   }
 }

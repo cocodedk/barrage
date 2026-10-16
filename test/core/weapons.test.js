@@ -19,7 +19,7 @@ test('WEAPONS carries the spec numbers', () => {
   assert.deepEqual(row('dynamite'), [70, 75, 4, 0.2]);
   assert.equal(weaponById('bazooka').windy, true);
   assert.equal(weaponById('grenade').windy, false);
-  for (const w of WEAPONS) assert.ok(w.name && w.icon);
+  for (const w of WEAPONS) assert.ok(w.name);
 });
 
 test('bazooka: speed is power * 900 along the aim, explodes on contact (r 40)', () => {

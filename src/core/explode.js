@@ -1,6 +1,6 @@
 // Explosions, damage and death. Knows nothing about turns or movement.
 export const REACH = 8; // a body this far beyond the blast radius still feels it
-export const DEATH_BLAST = { r: 25, damage: 15 };
+const DEATH_BLAST = { r: 25, damage: 15 };
 const KNOCKBACK = 6; // px/s of push per point of damage at the centre
 const MIN_KICK = 40; // pushes weaker than this leave a grounded soldier standing
 const LIFT = 0.45; // upward bias of every push

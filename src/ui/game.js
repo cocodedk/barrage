@@ -25,12 +25,11 @@ export function createMatch(canvas, level, mode, seed, opts = {}) {
   if (opts.attract) for (const t of world.teams) t.ai = { skill: ATTRACT_SKILL };
   const view = createView(canvas, level, world, !!opts.attract);
   view.showHud = !opts.attract;
-  view.cursor = null;
   const m = {
     level, mode, seed, attract: !!opts.attract, world, rng, view,
     fxRng: makeRng(seed ^ 0x9e3779b9), // effects draw from their own stream
     fx: createFx(), cam: createCamera(), controls: createControls(),
-    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, time: 0, overTime: 0, replays: 0,
+    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, overTime: 0, replays: 0,
   };
   drain(m); // createWorld already announced the first turn
   return m;
@@ -44,7 +43,7 @@ export function replayAttract(m) {
   for (const t of m.world.teams) t.ai = { skill: ATTRACT_SKILL };
   m.rng = makeRng(m.seed + ++m.replays);
   replayTerrain(m.view, m.world);
-  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, time: 0, overTime: 0 });
+  Object.assign(m, { fx: createFx(), cam: createCamera(), ai: { plan: null, elapsed: 0 }, acc: 0, overTime: 0 });
   drain(m);
 }
 
@@ -107,7 +106,6 @@ export function stepMatch(m, realDt, input) {
   }
   if (n === MAX_STEPS) m.acc = 0;
   stepFx(m.fx, realDt, m.world.terrain);
-  m.time += realDt;
   if (m.world.winner != null) m.overTime += realDt;
   return n;
 }

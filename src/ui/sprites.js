@@ -125,11 +125,6 @@ export const star = (color) =>
     g.fill();
   });
 
-// Draw a square sprite centred on (x, y) with radius r.
-export function blit(ctx, sprite, x, y, r) {
-  ctx.drawImage(sprite, x - r, y - r, r * 2, r * 2);
-}
-
 // Rounded rectangle path.
 export function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();

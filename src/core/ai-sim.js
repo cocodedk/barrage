@@ -18,7 +18,7 @@ export function simWorldFor(world, shooter) {
 }
 
 // Fly one shell until it bursts. Returns { hit: 'terrain'|'unit'|'fuse'|'liquid'|'out'|'timeout', x, y }.
-export function flyShell(sw, w, mx, my, vx, vy, dt) {
+function flyShell(sw, w, mx, my, vx, vy, dt) {
   const p = makeProjectile(w, -1, mx, my, vx, vy);
   let fuse = w.fuse;
   for (let t = 0; t < MAX_SIM; t += dt) {
@@ -31,7 +31,7 @@ export function flyShell(sw, w, mx, my, vx, vy, dt) {
 }
 
 // Fire from feet (org.x, org.y) at `deg` above horizontal, facing -1|1, power 0..1.
-export function shotImpact(sw, w, org, facing, deg, power, dt) {
+function shotImpact(sw, w, org, facing, deg, power, dt) {
   const a = deg * DEG;
   const d = { x: facing * Math.cos(a), y: -Math.sin(a) };
   const m = muzzle(org, d);
@@ -59,7 +59,7 @@ export function impactValue(impact, w, ctx) {
   return value - GRADIENT * nearest;
 }
 
-// Sweep an angle x power grid; returns the best { deg, power, value, impact } or null.
+// Sweep an angle x power grid; returns the best { deg, power, value, impact }.
 function sweep(sw, w, ctx, org, facing, g) {
   let best = null;
   for (let deg = g.a0; deg <= g.a1 + 1e-9; deg += g.aStep) {
@@ -79,9 +79,10 @@ const FAST = { ...COARSE, aStep: 8, pStep: 0.1 };
 // Coarse grid, then refinements around the winner: each a 5 x 5 grid at half the last spacing
 // (one fewer when `fast`, for secondary spots). Only the last flies at the game's own 1/60 s.
 export function bestShot(sw, w, ctx, org, facing, fast = false) {
-  let best = sweep(sw, w, ctx, org, facing, fast ? FAST : COARSE);
-  let spanA = (fast ? FAST : COARSE).aStep;
-  let spanP = (fast ? FAST : COARSE).pStep;
+  const grid = fast ? FAST : COARSE;
+  let best = sweep(sw, w, ctx, org, facing, grid);
+  let spanA = grid.aStep;
+  let spanP = grid.pStep;
   const passes = fast ? 2 : 3;
   for (let pass = 0; pass < passes && best.value > REFINE_VALUE; pass++) {
     const aStep = spanA / 2;
@@ -91,7 +92,7 @@ export function bestShot(sw, w, ctx, org, facing, fast = false) {
       p0: Math.max(0.1, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep,
       dt: pass === passes - 1 ? 1 / 60 : 1 / 30,
     };
-    best = sweep(sw, w, ctx, org, facing, g) || best;
+    best = sweep(sw, w, ctx, org, facing, g);
     spanA = aStep;
     spanP = pStep;
   }

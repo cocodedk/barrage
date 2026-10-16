@@ -4,8 +4,6 @@ import { LEVELS } from '../../src/core/levels.js';
 import { generateTerrain, spawnPoints } from '../../src/core/terrain-gen.js';
 import { makeRng } from '../../src/core/rng.js';
 
-const AMBIENT = ['none', 'leaves', 'snow', 'fireflies', 'rain', 'fog', 'bubbles', 'embers',
-  'stars', 'pixels'];
 const byId = (id) => LEVELS.find((l) => l.id === id);
 const snapshot = (t) => t.mask.reduce((h, v, i) => (h + v * (i % 97 + 1)) % 1000003, 0);
 
@@ -40,7 +38,6 @@ test('every level has every field, in range', () => {
     assert.ok(l.windMax >= 0, at);
     assert.ok(l.friction >= 0 && l.friction <= 1, at);
     assert.ok(l.drag >= 0 && l.drag <= 1, at);
-    assert.ok(AMBIENT.includes(l.ambient), at);
     assert.ok(l.aiSkill >= 0 && l.aiSkill <= 1, at);
     assert.equal(typeof l.terrain, 'object', at);
   }

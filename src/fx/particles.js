@@ -18,10 +18,10 @@ export function makeParticle(p) {
   };
 }
 
-// Oldest particles go first when the pool is full.
+// Add a particle made from `p`; the oldest go first when the pool is full.
 export function addParticle(fx, p) {
   if (fx.particles.length >= MAX_PARTICLES) fx.particles.shift();
-  fx.particles.push(p);
+  fx.particles.push(makeParticle(p));
 }
 
 const SETTLE_SPEED = 40; // px/s: a bouncing particle slower than this comes to rest

@@ -3,7 +3,7 @@ import { W, H, makeCanvas, rgba, shade, glow } from './sprites.js';
 import { makeRng } from '../core/rng.js';
 import { paintLayer, SKIRT } from './parallax-shapes.js';
 
-export const MARGIN = 260; // spare width each side so camera shifts never show an edge
+const MARGIN = 260; // spare width each side so camera shifts never show an edge
 
 // Layers stand on a horizon just below the typical ground line, so each one's `height`
 // is how far it rises above the land instead of being buried behind it.

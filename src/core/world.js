@@ -5,7 +5,7 @@ import { stepProjectiles } from './projectiles.js';
 import { newTurnState, beginTurn, applyIntents, stepTurn, activeUnit } from './turns.js';
 import { resolveDeaths } from './explode.js';
 
-export const UNITS_PER_TEAM = 3;
+const UNITS_PER_TEAM = 3;
 const TEAM_COLORS = ['#3aa0ff', '#ff5252'];
 
 function shuffle(list, rng) {

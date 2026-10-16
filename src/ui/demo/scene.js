@@ -1,7 +1,7 @@
 // The demo's stagehands: where everyone stands, keeping the turn on the player between steps,
 // and planning the scripted shots. UI layer only: it places soldiers and resets the turn the way
 // a director sets a scene, but every shot, blast and fall still runs through the real core.
-import { TURN_TIME } from '../../core/turns.js';
+import { TURN_TIME, newTurnState } from '../../core/turns.js';
 import { weaponById } from '../../core/weapons.js';
 import { unitAtRest } from '../../core/units.js';
 import { bodyCentre } from '../../core/explode.js';
@@ -15,7 +15,7 @@ export const HOME = [[560, 200, 340], [1180, 1460, 1790]]; // x of each soldier,
 const PIT = { x: 1600, r: 110, depth: 1070 }; // wide: a full-power knock still drops in
 
 export const hero = (world) => world.teams[0].units[0];
-export const pitSoldier = (world) => world.teams[1].units[1]; // the enemy on the well's lip
+const pitSoldier = (world) => world.teams[1].units[1]; // the enemy on the well's lip
 
 // Stand soldier `u` on the ground at x, still.
 export function place(world, u, x) {
@@ -33,12 +33,9 @@ function revive(world, u, fx) {
 }
 
 // The player's turn, from the top: aim phase, no shot fired, a full clock.
-export function freshTurn(world) {
-  const turn = world.turn;
-  Object.assign(turn, {
-    team: 0, unit: 0, phase: 'aim', timeLeft: TURN_TIME, power: 0, charging: false,
-    shotsFired: 0, settled: 0, shotsLeft: weaponById(turn.weapon).shots,
-  });
+function freshTurn(world) {
+  const { weapon } = world.turn;
+  Object.assign(world.turn, newTurnState(), { weapon, shotsLeft: weaponById(weapon).shots });
 }
 
 // Everyone home at full health, the hero facing the enemy (the first step and its replays).

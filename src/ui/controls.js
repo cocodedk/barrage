@@ -13,12 +13,13 @@ const KEYS = {
   down: ['ArrowDown', 'KeyS'], jump: ['Enter', 'NumpadEnter'], fire: ['Space'],
 };
 const DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
+const clampX = (x) => clamp(x, 20, W - 20); // the marker stays clear of the world's edges
 
 // armed: a fire press began during this aim phase (so a held key never fires into a new turn).
 export const createControls = () => ({ armed: false, markerX: null });
 
 // Client (CSS px) -> world coordinates, through the view's letterbox fit and the camera.
-export function toWorld(view, cam, clientX, clientY) {
+function toWorld(view, cam, clientX, clientY) {
   const c = view.canvas;
   const rect = c.getBoundingClientRect();
   if (!rect.width || !rect.height || !view.fit?.s) return null;
@@ -62,9 +63,9 @@ export function humanIntents(c, input, world, view, cam, dt) {
   const at = m.seen ? toWorld(view, cam, m.x, m.y) : null;
 
   if (strike) {
-    if (c.markerX == null) c.markerX = clamp(u.x + u.facing * 320, 20, W - 20);
-    if (m.moved && at) c.markerX = clamp(at.x, 20, W - 20);
-    c.markerX = clamp(c.markerX + ((held('right') ? 1 : 0) - (held('left') ? 1 : 0)) * MARKER_SPEED * dt, 20, W - 20);
+    if (c.markerX == null) c.markerX = clampX(u.x + u.facing * 320);
+    if (m.moved && at) c.markerX = clampX(at.x);
+    c.markerX = clampX(c.markerX + ((held('right') ? 1 : 0) - (held('left') ? 1 : 0)) * MARKER_SPEED * dt);
     const y = at && Math.abs(at.x - c.markerX) < 1 ? at.y : world.terrain.surfaceY(Math.round(c.markerX));
     view.cursor = { x: c.markerX, y: clamp(y, 0, H) };
   } else {
