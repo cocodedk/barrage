@@ -63,6 +63,29 @@ test('damage floats rising, fading text', () => {
   assert.equal(fx.floaters.length, 0);
 });
 
+test('explosion debris is the only bouncing kind', () => {
+  const fx = createFx();
+  applyEvent(fx, boom(60), makeRng(1), level);
+  assert.ok(fx.particles.filter((p) => p.kind === 'debris').every((p) => p.bounce > 0));
+  assert.ok(fx.particles.filter((p) => p.kind !== 'debris').every((p) => p.bounce === 0));
+});
+
+test('no gravestone for a death in the liquid, but one just above it', () => {
+  const drowned = createFx();
+  applyEvent(drowned, { type: 'death', unit: 2, x: 300, y: 1020 }, makeRng(1), level);
+  assert.deepEqual(drowned.graves, []);
+  assert.ok(drowned.particles.length > 0);
+  const edge = createFx();
+  applyEvent(edge, { type: 'death', unit: 2, x: 300, y: 1016 }, makeRng(1), level);
+  assert.equal(edge.graves.length, 0);
+  const land = createFx();
+  applyEvent(land, { type: 'death', unit: 2, x: 300, y: 1015 }, makeRng(1), level);
+  assert.equal(land.graves.length, 1);
+  const noLevel = createFx();
+  applyEvent(noLevel, { type: 'death', unit: 2, x: 300, y: 2000 }, makeRng(1), undefined);
+  assert.equal(noLevel.graves.length, 1);
+});
+
 test('death adds sparks and a gravestone', () => {
   const fx = createFx();
   applyEvent(fx, { type: 'death', unit: 2, x: 300, y: 700 }, makeRng(1), level);
@@ -95,6 +118,19 @@ test('fire gives a muzzle flash and smoke; bounce and land give dust', () => {
   assert.equal(f4.particles.length, 0);
 });
 
+test('jump and land with a world raise dust; jump without one does nothing', () => {
+  const world = { teams: [{ units: [{ id: 7, x: 50, y: 60 }] }] };
+  const j = createFx();
+  applyEvent(j, { type: 'jump', unit: 7 }, makeRng(1), level, world);
+  assert.ok(j.particles.length > 0 && j.particles.every((p) => p.kind === 'dust'));
+  const none = createFx();
+  applyEvent(none, { type: 'jump', unit: 7 }, makeRng(1), level);
+  assert.equal(none.particles.length, 0);
+  const soft = createFx();
+  applyEvent(soft, { type: 'land', unit: 7, impact: 5 }, makeRng(1), level, world);
+  assert.equal(soft.particles.length, 0);
+});
+
 test('win slows time to 0.3x for 1 s of real time, then restores it', () => {
   const fx = createFx();
   assert.equal(fx.timeScale, 1);
@@ -107,9 +143,15 @@ test('win slows time to 0.3x for 1 s of real time, then restores it', () => {
   assert.equal(fx.timeScale, 1);
 });
 
-test('unknown events and a missing level are harmless', () => {
+test('a turn event leaves fx unchanged', () => {
   const fx = createFx();
+  const before = JSON.stringify(fx);
   applyEvent(fx, { type: 'turn', team: 0, unit: 0, wind: 3 }, makeRng(1), level);
+  assert.equal(JSON.stringify(fx), before);
+});
+
+test('a missing level is harmless', () => {
+  const fx = createFx();
   applyEvent(fx, boom(40), makeRng(1), undefined);
   applyEvent(fx, { type: 'splash', x: 1, y: 1 }, makeRng(1), undefined);
   assert.ok(fx.particles.length > 0);

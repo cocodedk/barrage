@@ -41,13 +41,14 @@ function stepTimed(list, dt, onStep) {
   list.length = n;
 }
 
-export function stepFx(fx, dt) {
+// terrain (optional) lets bouncing particles hit the ground: anything with solid(x, y).
+export function stepFx(fx, dt, terrain) {
   fx.time += dt;
   fx.slowLeft = Math.max(0, fx.slowLeft - dt);
   fx.timeScale = fx.slowLeft > 0 ? SLOWMO_SCALE : 1;
   const sdt = dt * fx.timeScale;
 
-  stepParticles(fx.particles, sdt);
+  stepParticles(fx.particles, sdt, terrain);
   stepTimed(fx.rings, sdt, (r) => {
     const t = 1 - r.life / r.max;
     r.r = r.maxR * (1 - (1 - t) * (1 - t)); // ease-out

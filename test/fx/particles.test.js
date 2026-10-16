@@ -29,6 +29,53 @@ test('particles expire after their life', () => {
   assert.equal(fx.particles.length, 0);
 });
 
+const floor = { solid: (x, y) => y >= 100 };
+
+test('a bouncing particle rebounds off solid ground, then settles', () => {
+  const fx = createFx();
+  addParticle(fx, makeParticle({ life: 100, gravity: 900, bounce: 0.4, vx: 50 }));
+  let bounced = false;
+  for (let i = 0; i < 600 && !bounced; i++) {
+    stepFx(fx, 1 / 60, floor);
+    const p = fx.particles[0];
+    assert.ok(p.y < 100, 'never inside the ground');
+    if (p.vy < 0) bounced = true;
+  }
+  assert.ok(bounced, 'moving upward after the hit');
+  for (let i = 0; i < 600; i++) stepFx(fx, 1 / 60, floor);
+  const p = fx.particles[0];
+  assert.ok(p.y < 100 && p.y > 90);
+  assert.equal(p.vy, 0);
+  assert.equal(p.vx, 0);
+});
+
+test('without terrain a bouncing particle falls straight through', () => {
+  const fx = createFx();
+  addParticle(fx, makeParticle({ life: 10, gravity: 900, bounce: 0.4 }));
+  for (let i = 0; i < 120; i++) stepFx(fx, 1 / 60);
+  assert.ok(fx.particles[0].y > 100);
+  assert.ok(fx.particles[0].vy > 0);
+});
+
+test('particles with bounce 0 ignore terrain', () => {
+  const fx = createFx();
+  addParticle(fx, makeParticle({ life: 10, gravity: 900 }));
+  for (let i = 0; i < 120; i++) stepFx(fx, 1 / 60, floor);
+  assert.ok(fx.particles[0].y > 100);
+});
+
+test('a particle hitting a wall reflects sideways; one born inside ground escapes', () => {
+  const wall = { solid: (x) => x >= 100 };
+  const fx = createFx();
+  addParticle(fx, makeParticle({ life: 10, vx: 200, bounce: 0.5 }));
+  for (let i = 0; i < 60; i++) stepFx(fx, 1 / 60, wall);
+  assert.ok(fx.particles[0].x < 100 && fx.particles[0].vx < 0);
+  const inside = createFx();
+  addParticle(inside, makeParticle({ x: 150, life: 10, vx: 100, bounce: 0.5 }));
+  stepFx(inside, 1 / 60, wall);
+  assert.ok(inside.particles[0].x > 150);
+});
+
 test('gravity pulls down, drag slows, grow enlarges', () => {
   const fx = createFx();
   addParticle(fx, makeParticle({ life: 5, vx: 100, gravity: 500, drag: 2, size: 4, grow: 10 }));

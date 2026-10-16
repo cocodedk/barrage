@@ -7,6 +7,8 @@ const FALLBACK_LIQUID = '#2a8fd6';
 const FIRE_COLORS = ['#fff6c8', '#ffd24a', '#ff9a2e', '#ff6a1a'];
 const SMOKE_COLORS = ['#3a3a3f', '#55555c', '#6e6e76'];
 const DUST = '#c8b89a';
+const DEBRIS_BOUNCE = 0.4;
+const GRAVE_LIQUID_MARGIN = 4; // a death this close to the liquid surface is a drowning
 const LAND_DUST_MIN = 8; // impact px below this raises no dust
 
 const spread = (rng, a, b) => a + (b - a) * rng();
@@ -53,15 +55,16 @@ function explosion(fx, ev, rng, level) {
     addParticle(fx, makeParticle({
       x: x + spread(rng, -r, r) * 0.3, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
       life: spread(rng, 0.8, 1.6), size: spread(rng, 2, 5), color: pick(rng, fill), kind: 'debris',
-      gravity: 900, drag: 0.3,
+      gravity: 900, drag: 0.3, bounce: DEBRIS_BOUNCE,
     }));
   }
   for (let i = 0; i < count(r / 8); i++) smoke(fx, rng, x, y, r * 0.5, spread(rng, 8, 14) + r * 0.1);
   for (let i = 0; i < count(r / 3); i++) spark(fx, rng, x, y, 250 + r * 3);
 }
 
-function death(fx, ev, rng) {
-  fx.graves.push({ x: ev.x, y: ev.y });
+function death(fx, ev, rng, level) {
+  const drowned = level?.liquid && ev.y >= level.liquid.y - GRAVE_LIQUID_MARGIN;
+  if (!drowned) fx.graves.push({ x: ev.x, y: ev.y });
   for (let i = 0; i < 24; i++) spark(fx, rng, ev.x, ev.y - 10, 260);
   for (let i = 0; i < 6; i++) {
     addParticle(fx, makeParticle({
@@ -104,7 +107,7 @@ export function applyEvent(fx, ev, rng, level, world) {
         life: 1.4, max: 1.4,
       });
       break;
-    case 'death': death(fx, ev, rng); break;
+    case 'death': death(fx, ev, rng, level); break;
     case 'splash': splash(fx, ev, rng, level); break;
     case 'fire': fire(fx, ev, rng); break;
     case 'bounce': dust(fx, rng, ev.x, ev.y, 5); break;
