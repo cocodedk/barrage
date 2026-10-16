@@ -1,4 +1,4 @@
-// Saved progress: the highest unlocked campaign level and the mute switch. Every localStorage
+// Saved progress: the highest unlocked campaign level, the mute switch and whether the demo was seen. Every localStorage
 // touch is wrapped: private windows, kiosks and blocked storage just play without saving.
 import { LEVELS } from '../core/levels.js';
 
@@ -36,6 +36,8 @@ export function unlockLevel(n) {
 }
 
 export const isMuted = () => !!load().muted;
+export const seenDemo = () => !!load().seenDemo;
+export const setSeenDemo = () => save({ seenDemo: true });
 export const setMuted = (muted) => save({ muted: !!muted });
 
 // Campaign: play any level up to the unlocked one. Versus: 1-3 always, plus every beaten level.

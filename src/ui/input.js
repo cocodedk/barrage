@@ -61,13 +61,18 @@ export function createInput(canvas) {
     m.down = false;
     m.released = true;
   });
-  addEventListener('pointercancel', () => {
-    m.down = false; // no release edge: a cancelled pointer never fires
-  });
+  addEventListener('pointercancel', () => cancelPointer(input));
   addEventListener('pointerdown', gesture);
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
   return input;
+}
+
+// The browser took the pointer away mid-press: no release edge, and the charge it was building
+// is dropped (like a pause), so a later press never carries it on.
+export function cancelPointer(input) {
+  input.mouse.down = false;
+  input.cancelled = true;
 }
 
 // Forget edges after a logic tick has read them.

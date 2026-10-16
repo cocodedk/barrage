@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { stepWorld } from '../../src/core/world.js';
 import { makeRng } from '../../src/core/rng.js';
 import { createControls, humanIntents } from '../../src/ui/controls.js';
-import { newInputState, endTick, resetInput } from '../../src/ui/input.js';
+import { newInputState, endTick, resetInput, cancelPointer } from '../../src/ui/input.js';
 import { flatWorld, eventsOf, DT } from '../core/helpers.js';
 
 // One logic tick the way game.js runs it: read intents, forget edges, step the world.
@@ -87,4 +87,21 @@ test('a key still held through a pause keeps walking but must be re-pressed to f
   const next = s.tick();
   assert.equal(next.right, true);
   assert.ok(!next.charge);
+});
+
+test('a cancelled mouse press drops its charge; the next press starts from zero', () => {
+  const s = setup();
+  const m = s.input.mouse;
+  Object.assign(m, { down: true, pressed: true });
+  s.tick(40);
+  assert.ok(s.w.turn.charging && s.w.turn.power > 0.5);
+  cancelPointer(s.input); // e.g. a touch turned into a scroll
+  s.tick();
+  assert.deepEqual([s.w.turn.charging, s.w.turn.power, s.w.turn.phase], [false, 0, 'aim']);
+  s.press(); // Space now: a fresh charge, not the old one carried on
+  s.tick(5);
+  s.lift();
+  s.tick();
+  assert.equal(eventsOf(s.w, 'fire').length, 1);
+  assert.ok(s.w.turn.power < 0.2, `fired from ${s.w.turn.power}, not the stale charge`);
 });

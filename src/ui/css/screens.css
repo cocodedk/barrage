@@ -1,4 +1,4 @@
-/* Barrage screens: title logo, level cards, how to play, loading card, round end. */
+/* Barrage screens: title logo, level cards, controls cards, loading card, round end. */
 
 /* ---- title -------------------------------------------------------------- */
 /* a soft scrim pooled behind the logo and menu, so the battle stays visible around the edges */
@@ -60,15 +60,13 @@
 .shake { animation: shake 0.4s ease; }
 @keyframes shake { 20%, 60% { translate: -0.5rem 0; } 40%, 80% { translate: 0.5rem 0; } }
 
-/* ---- how to play -------------------------------------------------------- */
-.howto { background: rgba(5, 6, 12, 0.9); }
-.lead { max-width: 70rem; margin: 0; font-size: 1.6rem; font-weight: 600; line-height: 1.45; text-align: center; color: var(--ink-dim); }
+/* ---- controls and weapons cards (the demo's last step) ------------------ */
 .howto-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; max-width: 86rem; }
-.howto h3 { margin: 0 0 0.8rem; font-size: 1.9rem; font-weight: 900; color: var(--gold); }
-.howto dl { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem 1.4rem; margin: 0; font-size: 1.35rem; }
-.howto dt { font-weight: 900; white-space: nowrap; }
-.howto .keys dt { color: #ffe9b0; }
-.howto dd { margin: 0; color: var(--ink-dim); font-weight: 600; }
+.howto-cols h3 { margin: 0 0 0.8rem; font-size: 1.9rem; font-weight: 900; color: var(--gold); }
+.howto-cols dl { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem 1.4rem; margin: 0; font-size: 1.35rem; }
+.howto-cols dt { font-weight: 900; white-space: nowrap; }
+.howto-cols .keys dt { color: #ffe9b0; }
+.howto-cols dd { margin: 0; color: var(--ink-dim); font-weight: 600; }
 
 /* ---- loading ------------------------------------------------------------ */
 .loading { transition-duration: 0.25s; }

@@ -1,0 +1,57 @@
+/* The demo: a caption panel just under the HUD's wind gauge (the world is 54 rem tall and
+   centred, so 50% - 18 rem is world y 180, clear of the HUD above and the soldiers below),
+   key caps that light up, progress dots, and the "You're ready" card at the end. */
+.demo { pointer-events: none; padding: 0; }
+.demo-cap {
+  position: absolute; left: 50%; top: calc(50% - 18rem); width: min(72rem, calc(100% - 2rem));
+  box-sizing: border-box; transform: translateX(-50%); padding: 1.1rem 1.8rem 1rem;
+  background: rgba(8, 10, 18, 0.74); text-align: center;
+}
+.demo-cap.pop { animation: cap-in 0.35s cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+@keyframes cap-in { from { opacity: 0; transform: translate(-50%, -0.8rem); } }
+.demo-head { display: flex; align-items: center; justify-content: space-between; gap: 1.4rem; }
+.demo-name { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.demo-title { margin: 0; font-size: 2.3rem; font-weight: 900; color: var(--gold); white-space: nowrap; }
+.demo-kicker {
+  flex: none; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 0.3rem 0.8rem; border-radius: 0.6rem; background: rgba(90, 180, 255, 0.22); color: #bfe4ff;
+  border: 0.1rem solid rgba(120, 200, 255, 0.55);
+}
+.demo-kicker.try { background: rgba(255, 170, 40, 0.24); color: #ffe2a8; border-color: rgba(255, 190, 70, 0.75); }
+.demo-kicker.done { background: rgba(110, 255, 120, 0.22); color: #c4ffc4; border-color: rgba(125, 255, 106, 0.7); }
+.demo-prog { display: flex; align-items: center; gap: 0.9rem; flex: none; }
+.demo-dots { display: flex; gap: 0.4rem; }
+.demo-dots i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
+.demo-dots i.past { background: rgba(255, 210, 74, 0.7); }
+.demo-dots i.now { background: var(--gold); box-shadow: 0 0 0.6rem rgba(255, 170, 40, 0.9); transform: scale(1.3); }
+.demo-count { font-size: 1.15rem; font-weight: 800; color: var(--ink-dim); letter-spacing: 0.06em; }
+.demo-text { margin: 0.7rem 0 0.2rem; font-size: 2rem; font-weight: 800; line-height: 1.5; }
+.demo-foot { margin: 0.5rem 0 0; font-size: 1.1rem; font-weight: 700; color: var(--ink-dim); white-space: pre; }
+
+.key {
+  display: inline-block; min-width: 1.1em; padding: 0.05em 0.45em; margin: 0 0.08em; border-radius: 0.35em;
+  font: inherit; font-weight: 900; line-height: 1.25; text-align: center; color: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07));
+  border: 0.1rem solid rgba(255, 255, 255, 0.4); box-shadow: 0 0.2rem 0 rgba(0, 0, 0, 0.45);
+  transition: background 0.08s ease, transform 0.08s ease, box-shadow 0.08s ease;
+}
+.demo-foot .key { box-shadow: 0 0.12rem 0 rgba(0, 0, 0, 0.45); }
+.key.lit {
+  color: #1b1405; background: linear-gradient(180deg, #fff3b8, var(--gold)); border-color: #fff3b8;
+  transform: translateY(0.15rem); box-shadow: 0 0 1.2rem rgba(255, 190, 60, 0.85);
+}
+
+.demo.final { pointer-events: auto; }
+.demo.final .demo-cap { display: none; }
+.demo-final { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; padding: 2rem 3rem;
+  animation: rise 0.5s cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+.demo-final .screen-title { color: var(--gold); }
+
+/* the title's nudge for first-timers */
+.btn-new { border-color: rgba(255, 210, 74, 0.7); }
+.new-badge { margin: 0 0 -0.4rem; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.08em; color: var(--gold);
+  text-align: center; text-shadow: 0 0.2rem 0.8rem #000; animation: logo-pulse 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-cap.pop, .demo-final, .new-badge, .key { animation: none; transition: none; }
+}

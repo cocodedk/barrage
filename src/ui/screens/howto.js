@@ -1,5 +1,5 @@
-// How to play: controls and the six weapons, readable from the sofa.
-import { h, button, navigate, shell } from './dom.js';
+// The controls and the six weapons at a glance, readable from the sofa: the demo's last step.
+import { h } from './dom.js';
 
 const KEYS = [
   ['← →  or  A D', 'Walk (climbs gentle slopes)'],
@@ -24,15 +24,8 @@ function table(rows, cls) {
   return t;
 }
 
-export function howtoScreen(back) {
-  const el = shell('howto', 'How to play');
-  const intro = h('p', 'lead', 'Two teams of three take turns. Each turn lasts 30 seconds: move, aim, fire, then 3 seconds to run. Wipe out the other team. Water and lava are deadly; so are long falls.');
-  const done = button('Back', back, 'btn');
-  el.append(intro, h('div', 'howto-cols',
+export function howtoCards() {
+  return h('div', 'howto-cols',
     h('div', 'card-panel', h('h3', null, 'Controls'), table(KEYS, 'keys')),
-    h('div', 'card-panel', h('h3', null, 'Weapons'), table(WEAPONS, 'weapons'))), done);
-  return {
-    el, focus: done,
-    onKey: (code) => (code === 'Escape' ? (back(), true) : navigate([done], code)),
-  };
+    h('div', 'card-panel', h('h3', null, 'Weapons'), table(WEAPONS, 'weapons')));
 }

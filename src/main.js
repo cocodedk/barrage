@@ -3,16 +3,17 @@
 import { LEVELS } from './core/levels.js';
 import { createInput, resetInput } from './ui/input.js';
 import { unlockAudio, toggleMute, play } from './ui/audio.js';
-import { unlockedLevel } from './ui/storage.js';
+import { unlockedLevel, seenDemo, setSeenDemo } from './ui/storage.js';
 import { createMatch, stepMatch, drawMatch, forceWin } from './ui/game.js';
 import { createDebug } from './ui/debug.js';
 import { createScreens, toast } from './ui/screens/stage.js';
 import { titleScreen } from './ui/screens/title.js';
 import { levelsScreen } from './ui/screens/levels.js';
-import { howtoScreen } from './ui/screens/howto.js';
 import { pauseScreen } from './ui/screens/pause.js';
 import { loadingScreen } from './ui/screens/loading.js';
 import { roundEndScreen } from './ui/screens/roundend.js';
+import { demoScreen } from './ui/demo/demo-screen.js';
+import { DEMO_SEED } from './ui/demo/scene.js';
 
 const ROUND_END_DELAY = 2.2; // s after the deciding blast before the round-end card
 const ATTRACT_MAX = 150; // s before the title battle moves to another level
@@ -22,7 +23,7 @@ const canvas = document.getElementById('game');
 const stage = createScreens(document.getElementById('ui'));
 const input = createInput(canvas);
 input.onGesture = unlockAudio;
-const app = { state: 'title', match: null, attract: null, loadToken: 0 };
+const app = { state: 'title', match: null, attract: null, demo: null, loadToken: 0 };
 
 const seed = () => crypto.getRandomValues(new Uint32Array(1))[0];
 const randomLevel = () => LEVELS[seed() % LEVELS.length];
@@ -35,48 +36,62 @@ function startAttract() {
 function goTitle() {
   app.state = 'title';
   app.match = null;
-  stage.show(titleScreen((to) => (to === 'howto' ? goHowto() : goLevels(to))));
+  app.demo = null;
+  stage.show(titleScreen((to) => (to === 'howto' ? goHowto() : goLevels(to)), !seenDemo()));
   if (!app.attract) requestAnimationFrame(() => requestAnimationFrame(startAttract)); // paint the menu first
 }
-const goHowto = () => stage.show(howtoScreen(goTitle));
+const goHowto = () => startLevel(LEVELS[0], 'demo'); // How to play is the watch-then-try demo
 const goLevels = (mode) => {
   app.state = 'menu';
   stage.show(levelsScreen(mode, (level) => startLevel(level, mode), goTitle));
 };
 
+// The demo leaves for the title or the campaign; either way it counts as seen.
+function leaveDemo(to) {
+  setSeenDemo();
+  if (to === 'campaign') startLevel(LEVELS[Math.min(unlockedLevel(), LEVELS.length) - 1], 'campaign');
+  else goTitle();
+}
+
+// mode: 'campaign', 'versus' or 'demo' (Green Meadow on a fixed seed, run by the demo script).
 function startLevel(level, mode) {
   const token = ++app.loadToken;
+  const demo = mode === 'demo';
   app.state = 'loading';
   app.match = null;
   app.attract = null;
-  stage.show(loadingScreen(level, mode === 'campaign' ? 'Campaign' : 'Versus'));
+  app.demo = null;
+  stage.show(loadingScreen(level, demo ? 'How to play' : mode === 'campaign' ? 'Campaign' : 'Versus'));
   const t0 = performance.now();
   requestAnimationFrame(() => requestAnimationFrame(() => {
     if (token !== app.loadToken) return;
-    const match = createMatch(canvas, level, mode, seed());
+    const match = createMatch(canvas, level, demo ? 'versus' : mode, demo ? DEMO_SEED : seed());
     const wait = Math.max(0, MIN_LOADING * 1000 - (performance.now() - t0));
     setTimeout(() => {
       if (token !== app.loadToken) return;
       app.match = match;
-      app.state = 'playing';
+      app.state = demo ? 'demo' : 'playing';
       resetInput(input);
-      stage.show(null);
+      if (demo) app.demo = demoScreen(match, { campaign: () => leaveDemo('campaign'), menu: () => leaveDemo('title') });
+      stage.show(app.demo);
     }, wait);
   }));
 }
 
 function pause() {
   const m = app.match;
+  const was = app.state; // 'playing' or 'demo'
   app.state = 'paused';
   resetInput(input); // a charge in progress is dropped, not fired
   play('menu');
   stage.show(pauseScreen({
-    levelName: `Level ${m.level.id} — ${m.level.name}`,
-    resume: () => { app.state = 'playing'; resetInput(input); stage.show(null); },
-    restart: () => startLevel(m.level, m.mode),
-    quit: goTitle,
+    levelName: app.demo ? 'How to play' : `Level ${m.level.id} — ${m.level.name}`,
+    resume: () => { app.state = was; resetInput(input); stage.show(app.demo); },
+    restart: () => (app.demo ? goHowto() : startLevel(m.level, m.mode)),
+    quit: () => (app.demo ? leaveDemo('title') : goTitle()),
   }));
 }
+const live = () => app.state === 'playing' || app.state === 'demo';
 
 function endRound(m) {
   const { winner } = m.world;
@@ -89,14 +104,14 @@ function endRound(m) {
   }));
 }
 
-input.onKey = (code) => {
+input.onKey = (code, e) => {
   if (code === 'KeyM') return toast(toggleMute() ? 'Sound off' : 'Sound on');
-  if (stage.onKey(code)) return undefined;
-  if (app.state === 'playing' && code === 'Escape') pause();
+  if (stage.onKey(code, e)) return undefined;
+  if (live() && code === 'Escape') pause();
   return undefined;
 };
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && app.state === 'playing') pause();
+  if (document.hidden && live()) pause();
 });
 
 const debug = createDebug({
@@ -108,6 +123,7 @@ const debug = createDebug({
     return {
       state: app.state, unlocked: unlockedLevel(), level: w?.level.id, winner: w?.winner ?? null,
       turn: w && { team: w.turn.team, phase: w.turn.phase, weapon: w.turn.weapon, power: w.turn.power },
+      demo: app.match?.pilot && { step: app.match.pilot.runner.i + 1, phase: app.match.pilot.runner.phase },
     };
   },
 });
@@ -120,7 +136,8 @@ function frame(dt, t) {
   const m = app.match || app.attract;
   if (!m) return;
   const t0 = performance.now();
-  if (app.state !== 'paused') stepMatch(m, dt, app.state === 'playing' ? input : null);
+  if (app.state !== 'paused') stepMatch(m, dt, live() ? input : null);
+  if (app.state === 'demo') app.demo.update(input);
   const t1 = performance.now();
   drawMatch(m, dt, t);
   debug?.sample(dt * 1000, t1 - t0, performance.now() - t1);

@@ -18,6 +18,7 @@ const MAX_STEPS = 6; // per frame; beyond this the game slows instead of spirall
 const ATTRACT_SKILL = 0.75;
 
 // opts.attract: AI vs AI with no HUD and no sound (the title screen's backdrop).
+// m.pilot (set by the demo) supplies every tick's intents in place of the AI or the player.
 export function createMatch(canvas, level, mode, seed, opts = {}) {
   const rng = makeRng(seed);
   const world = createWorld(level, mode, rng);
@@ -29,7 +30,7 @@ export function createMatch(canvas, level, mode, seed, opts = {}) {
     level, mode, seed, attract: !!opts.attract, world, rng, view,
     fxRng: makeRng(seed ^ 0x9e3779b9), // effects draw from their own stream
     fx: createFx(), cam: createCamera(), controls: createControls(),
-    ai: { plan: null, elapsed: 0 }, acc: 0, time: 0, overTime: 0,
+    ai: { plan: null, elapsed: 0 }, pilot: null, acc: 0, time: 0, overTime: 0,
   };
   drain(m); // createWorld already announced the first turn
   return m;
@@ -66,7 +67,8 @@ function tick(m, input, dt) {
   const { world } = m;
   let intents = {};
   if (world.winner == null) {
-    if (world.teams[world.turn.team].ai) {
+    if (m.pilot) intents = m.pilot.intents(m, input, dt); // the demo: its script, or the player
+    else if (world.teams[world.turn.team].ai) {
       m.view.cursor = null;
       intents = aiTick(m, dt);
     } else if (input) {
@@ -75,6 +77,7 @@ function tick(m, input, dt) {
   } else m.view.cursor = null;
   if (input) endTick(input);
   stepWorld(world, dt, intents, m.rng);
+  m.pilot?.after(m, dt); // sees this tick's events before they drain
   drain(m);
 }
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { unlockedLevel, unlockLevel, isOpen, isMuted, setMuted } from '../../src/ui/storage.js';
+import { unlockedLevel, unlockLevel, isOpen, isMuted, setMuted, seenDemo, setSeenDemo } from '../../src/ui/storage.js';
 
 // Node has no localStorage, so this exercises the in-memory fallback first.
 test('progress works without localStorage', () => {
@@ -37,5 +37,15 @@ test('a throwing localStorage is survived and saves persist through a working on
   assert.deepEqual(JSON.parse(store['barrage.v1']), { unlocked: 16, muted: false });
   store['barrage.v1'] = '{not json';
   assert.equal(unlockedLevel(), 16); // corrupt data falls back to memory
+  delete globalThis.localStorage;
+});
+
+test('the demo counts as unseen until it is finished or left, and that is remembered', () => {
+  const store = {};
+  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = v; } };
+  assert.equal(seenDemo(), false);
+  setSeenDemo();
+  assert.equal(seenDemo(), true);
+  assert.equal(JSON.parse(store['barrage.v1']).seenDemo, true);
   delete globalThis.localStorage;
 });

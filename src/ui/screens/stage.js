@@ -1,5 +1,5 @@
 // The overlay stage: one screen at a time over the canvas, cross-faded, with keyboard focus
-// handed to the new screen. A screen is { el, focus?, onKey?(code) -> handled }.
+// handed to the new screen. A screen is { el, focus?, onKey?(code, event) -> handled }.
 const FADE_MS = 320;
 
 export function createScreens(root) {
@@ -10,19 +10,20 @@ export function createScreens(root) {
         const old = current.el;
         old.classList.remove('show');
         old.classList.add('leaving');
-        setTimeout(() => old.remove(), FADE_MS);
+        setTimeout(() => old !== current?.el && old.remove(), FADE_MS); // unless it came back (resume)
       }
       current = screen;
       if (!screen) {
         document.activeElement?.blur?.();
         return;
       }
+      screen.el.classList.remove('leaving');
       root.append(screen.el);
       void screen.el.offsetWidth; // commit the start state so the fade-in runs
       screen.el.classList.add('show');
       screen.focus?.focus({ preventScroll: true });
     },
-    onKey: (code) => !!current?.onKey?.(code),
+    onKey: (code, e) => !!current?.onKey?.(code, e),
   };
 }
 
