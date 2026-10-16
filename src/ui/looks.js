@@ -21,7 +21,7 @@ const LOOKS = {
   3: {
     sky: 'hazy', trim: 'litter', trimColor: '#c4521c', tex: 'loam', glow: 0.25, spikes: 'rocks',
     ambient: { kind: 'leaves', n: 46, colors: ['#e8752a', '#c9401c', '#f2b234', '#a8551f'], size: [4, 7], speed: 40, alpha: 1 },
-    flourish: ['rays'], hot: '#ff8a2a',
+    flourish: ['warmrays'], hot: '#ff8a2a',
   },
   4: {
     sky: 'pale', trim: 'snow', trimColor: '#ffffff', tex: 'ice', glow: 0.3, spikes: 'shards',

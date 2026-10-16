@@ -1,5 +1,5 @@
 // Turn flow: aim -> (fire) -> flying/retreat -> settling -> next team; wind, rotation, winner.
-import { WEAPONS, weaponById, fireWeapon, inFlight } from './weapons.js';
+import { weaponById, fireWeapon, inFlight } from './weapons.js';
 import { unitAtRest, AIM_LIMIT } from './units.js';
 import { clamp } from './math.js';
 import { between } from './rng.js';
@@ -44,7 +44,7 @@ export function setWeapon(world, id) {
 }
 
 function chooseWeapon(world, pick) {
-  const w = typeof pick === 'number' ? WEAPONS[pick] : weaponById(pick);
+  const w = weaponById(pick);
   if (w && world.turn.shotsFired === 0) setWeapon(world, w.id);
 }
 

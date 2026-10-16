@@ -6,8 +6,8 @@ import { W, H, rgba, shade, hash, glow, soft, star, wrap } from './sprites.js';
 import { SKY } from './flourish-sky.js';
 import { skyHaze } from './sky-paint.js';
 
-function rays(ctx, v, t) {
-  const warm = v.level.id === 3;
+// Light shafts from one origin: the level-3 sunset ('warmrays') or the jungle canopy ('rays').
+const raysFrom = (warm) => (ctx, v, t) => {
   const ox = warm ? 420 : 760;
   const oy = warm ? 190 : -80;
   const color = warm ? '#fff0c0' : '#e8ffb0';
@@ -31,7 +31,7 @@ function rays(ctx, v, t) {
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
-}
+};
 
 function mist(ctx, v, t) {
   const color = shade(skyHaze(v.level), 0.35);
@@ -144,7 +144,7 @@ function ash(ctx, v, t) {
 }
 
 const WORLD = {
-  rays: { mid: rays }, mist: { mid: mist }, caustics: { front: caustics }, fish: { mid: fish },
+  rays: { mid: raysFrom(false) }, warmrays: { mid: raysFrom(true) }, mist: { mid: mist }, caustics: { front: caustics }, fish: { mid: fish },
   eruption: { far: eruption }, glints: { front: glints }, ash: { front: ash },
 };
 

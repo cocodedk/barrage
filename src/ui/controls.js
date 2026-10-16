@@ -38,11 +38,11 @@ function toWorld(view, cam, clientX, clientY) {
 
 function pickWeapon(input, turn) {
   const digit = DIGITS.findIndex((d) => input.pressed.has(d));
-  if (digit >= 0) return digit;
+  if (digit >= 0) return WEAPONS[digit].id;
   const step = (input.pressed.has('KeyE') ? 1 : 0) - (input.pressed.has('KeyQ') ? 1 : 0);
   if (!step) return undefined;
   const i = WEAPONS.findIndex((w) => w.id === turn.weapon);
-  return (i + step + WEAPONS.length) % WEAPONS.length;
+  return WEAPONS[(i + step + WEAPONS.length) % WEAPONS.length].id;
 }
 
 function mouseAim(u, at) {

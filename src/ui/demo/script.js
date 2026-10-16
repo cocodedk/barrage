@@ -37,7 +37,7 @@ function airstrike(t, world, s) {
   s.from ??= u.x + u.facing * 320;
   s.to ??= world.teams[1].units.find((v) => v.alive && Math.abs(v.x - u.x) > 200)?.x ?? s.from;
   if (t < 0.5) return {};
-  if (t < 0.9) return { weapon: 3, press: '4' };
+  if (t < 0.9) return { weapon: 'airstrike', press: '4' };
   const k = Math.min(1, (t - 1.1) / 1.2);
   const marker = s.from + (s.to - s.from) * Math.max(0, k);
   if (t < 2.6) return { marker, press: s.to > s.from ? '→' : '←' };
@@ -103,8 +103,8 @@ export const STEPS = [
     watch: 'Switch weapons with {Q} {E} or {1} – {6}.',
     try: 'Pick the grenade: press {2}.',
     setup: (world) => setWeapon(world, 'bazooka'),
-    show: keys(3.2, [[0.5, 0.85, { weapon: 1, press: 'E' }], [1.3, 1.65, { weapon: 2, press: 'E' }],
-      [2.1, 2.45, { weapon: 1, press: 'Q' }]]),
+    show: keys(3.2, [[0.5, 0.85, { weapon: 'grenade', press: 'E' }], [1.3, 1.65, { weapon: 'cluster', press: 'E' }],
+      [2.1, 2.45, { weapon: 'grenade', press: 'Q' }]]),
     ready: (world) => setWeapon(world, 'bazooka'),
     check: (world) => world.turn.weapon === 'grenade',
   },

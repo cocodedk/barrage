@@ -4,6 +4,8 @@ import { stepProjectile } from './physics.js';
 import { makeProjectile, muzzle, aimDir, MAX_SPEED } from './weapons.js';
 import { REACH, blastDamage } from './explode.js';
 import { DEG } from './math.js';
+import { MIN_POWER } from './turns.js';
+import { AIM_LIMIT } from './units.js';
 import { TICK } from './world.js';
 
 const MAX_SIM = 6; // s; a bouncer can return null for ever
@@ -94,8 +96,8 @@ export function bestShot(sw, w, ctx, org, facing, fast = false) {
     const aStep = spanA / 2;
     const pStep = spanP / 2;
     const g = {
-      a0: Math.max(-20, best.deg - spanA), a1: Math.min(90, best.deg + spanA), aStep,
-      p0: Math.max(0.1, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep,
+      a0: Math.max(-20, best.deg - spanA), a1: Math.min(AIM_LIMIT / DEG, best.deg + spanA), aStep,
+      p0: Math.max(MIN_POWER, best.power - spanP), p1: Math.min(1, best.power + spanP), pStep,
       dt: pass === passes - 1 ? TICK : 1 / 30,
     };
     best = sweep(sw, w, ctx, org, facing, g);
