@@ -93,6 +93,22 @@ function fit(v) {
   return v.fit;
 }
 
+// Fill only the bars beside the world, 1 px into it so its antialiased edge has them beneath;
+// nothing at all when the world fills the canvas (most frames, and a full 1080p fill on a Pi).
+function letterbox(ctx, f, c) {
+  const x1 = f.ox + W * f.s;
+  const y1 = f.oy + H * f.s;
+  ctx.fillStyle = f.letterbox;
+  if (f.ox >= 1e-3) {
+    ctx.fillRect(0, 0, f.ox + 1, c.height);
+    ctx.fillRect(x1 - 1, 0, c.width - x1 + 1, c.height);
+  }
+  if (f.oy >= 1e-3) {
+    ctx.fillRect(0, 0, c.width, f.oy + 1);
+    ctx.fillRect(0, y1 - 1, c.width, c.height - y1 + 1);
+  }
+}
+
 function camera(g, cam, fx) {
   g.translate(W / 2, H / 2);
   g.scale(cam.zoom, cam.zoom);
@@ -121,8 +137,7 @@ export function drawFrame(v, world, fx, cam, t = 0) {
   const f = fit(v);
   const ctx = v.ctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = f.letterbox;
-  ctx.fillRect(0, 0, v.canvas.width, v.canvas.height);
+  letterbox(ctx, f, v.canvas);
   ctx.setTransform(f.s, 0, 0, f.s, f.ox, f.oy);
   ctx.save();
   ctx.beginPath();

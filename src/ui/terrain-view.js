@@ -3,7 +3,7 @@
 // and are drawn back up with smoothing off.
 import { W, H, makeCanvas, rgb, rgba, mix, glow } from './sprites.js';
 import { TEX } from './terrain-tex.js';
-import { trimSpec, trimPixel, dress, openAir, caveDistance } from './terrain-trim.js';
+import { trimSpec, trimDepths, trimPixel, dress, openAir, caveDistance } from './terrain-trim.js';
 import { craterSpans } from './crater-blocks.js';
 
 const RIM = 2; // px of bright edge along the surface
@@ -47,7 +47,7 @@ function caveWall(data, p, o, dist, lip, ceiling) {
 
 function paint(m, w, h, k, level, look) {
   const img = new ImageData(w, h);
-  const rim = new ImageData(w, h);
+  const rim = look.glow > 0 ? new ImageData(w, h) : null; // only a glowing look bakes one
   const open = openAir(m, w, h);
   const caveDist = caveDistance(m, open, w, h);
   const { depth, under } = runs(m, open, w, h);
@@ -56,6 +56,7 @@ function paint(m, w, h, k, level, look) {
   const edge = rgb(level.edge);
   const tex = TEX[look.tex] || TEX.soil;
   const T = trimSpec(look, level);
+  const bands = trimDepths(T, w, k);
   const reach = k === 1 ? 2 : 1;
   const o = [0, 0, 0];
   for (let y = 0; y < h; y++) {
@@ -74,18 +75,20 @@ function paint(m, w, h, k, level, look) {
         caveWall(img.data, p, o, caveDist[p] * k, lip, y >= 4 && m[p - w * 4]);
         continue;
       }
-      trimPixel(o, T, wx, wy, d);
+      trimPixel(o, T, bands[x], wx, wy, d);
       let e = 0;
       if (d <= RIM * (k === 1 ? 1 : 2) || (y > 0 && !m[p - w])) e = 1;
       else if ((x >= reach && !m[p - reach]) || (x < w - reach && !m[p + reach]) || !m[p - 1] || !m[p + 1]) e = 0.55;
       else if (under[p] * k <= RIM && y + under[p] < h) e = 0.4;
       if (e) {
         for (let i = 0; i < 3; i++) o[i] += (edge[i] - o[i]) * e;
-        const r = p * 4;
-        rim.data[r] = edge[0];
-        rim.data[r + 1] = edge[1];
-        rim.data[r + 2] = edge[2];
-        rim.data[r + 3] = 255 * e;
+        if (rim) {
+          const r = p * 4;
+          rim.data[r] = edge[0];
+          rim.data[r + 1] = edge[1];
+          rim.data[r + 2] = edge[2];
+          rim.data[r + 3] = 255 * e;
+        }
       }
       const q = p * 4;
       img.data[q] = o[0];

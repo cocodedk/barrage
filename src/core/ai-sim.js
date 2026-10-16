@@ -18,13 +18,20 @@ export function simWorldFor(world, shooter) {
 }
 
 // Fly one shell until it bursts. Returns { hit: 'terrain'|'unit'|'fuse'|'liquid'|'out'|'timeout', x, y }.
+// A bouncer that has come to rest repeats the same step for ever, so once a step changes nothing
+// only the fuse and the clock still run.
 function flyShell(sw, w, mx, my, vx, vy, dt) {
   const p = makeProjectile(w, -1, mx, my, vx, vy);
   let fuse = w.fuse;
+  let still = false;
   for (let t = 0; t < MAX_SIM; t += dt) {
-    const hit = stepProjectile(p, sw, dt);
-    if (p.y >= sw.liquidY) return { hit: 'liquid', x: p.x, y: p.y };
-    if (hit) return hit;
+    if (!still) {
+      const { x, y, vx: ux, vy: uy } = p;
+      const hit = stepProjectile(p, sw, dt);
+      if (p.y >= sw.liquidY) return { hit: 'liquid', x: p.x, y: p.y };
+      if (hit) return hit;
+      still = p.x === x && p.y === y && p.vx === ux && p.vy === uy;
+    }
     if (fuse != null && (fuse -= dt) <= 0) return { hit: 'fuse', x: p.x, y: p.y };
   }
   return { hit: 'timeout', x: p.x, y: p.y };

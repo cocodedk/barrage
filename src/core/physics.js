@@ -13,13 +13,19 @@ export function hitsUnit(unit, x, y) {
   return Math.abs(x - unit.x) <= UNIT_HALF_W + 1 && y >= unit.y - UNIT_H - 1 && y <= unit.y + 1;
 }
 
-// Unit vector pointing from the solid mask out into the air around (x, y).
+// Unit vector pointing from the solid mask out into the air around (x, y). Reads the mask
+// directly with Terrain.solid's rules: below the world is solid, elsewhere outside it is air.
 function surfaceNormal(terrain, x, y, vx, vy) {
+  const { w, h, mask } = terrain;
   let nx = 0;
   let ny = 0;
   for (let dy = -NORMAL_REACH; dy <= NORMAL_REACH; dy++) {
+    const iy = Math.floor(y + dy);
+    if (iy >= h) continue;
+    const row = iy * w;
     for (let dx = -NORMAL_REACH; dx <= NORMAL_REACH; dx++) {
-      if (!terrain.solid(x + dx, y + dy)) {
+      const ix = Math.floor(x + dx);
+      if (iy < 0 || ix < 0 || ix >= w || mask[row + ix] !== 1) {
         nx += dx;
         ny += dy;
       }

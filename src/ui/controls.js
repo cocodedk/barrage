@@ -66,7 +66,7 @@ export function humanIntents(c, input, world, view, cam, dt) {
   if (aiming) out.weapon = pickWeapon(input, turn);
   const w = weaponById(turn.weapon);
   const strike = aiming && w.id === 'airstrike';
-  const at = m.seen ? toWorld(view, cam, m.x, m.y) : null;
+  const at = m.seen && (strike || m.moved) ? toWorld(view, cam, m.x, m.y) : null; // only read when used
 
   if (strike) {
     if (c.markerX == null) c.markerX = clampX(u.x + u.facing * 320);

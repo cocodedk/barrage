@@ -38,10 +38,20 @@ export function trimSpec(look, level) {
   };
 }
 
-// Recolour `o` if pixel (x, y) at depth d lies in the trim band.
-export function trimPixel(o, T, x, y, d) {
-  let lo = T.depth[0] + (T.depth[1] - T.depth[0]) * noise2(x, 0, 23);
-  if (T.drips && hash(x >> 3) > 0.72) lo += 8 + hash((x >> 3) + 99) * 26 * Math.sin(((x & 7) / 8) * Math.PI);
+// How deep the trim band reaches in each of `w` columns, k world px apart (once per bake).
+export function trimDepths(T, w, k) {
+  const out = new Float64Array(w);
+  for (let c = 0; c < w; c++) {
+    const x = c * k;
+    let lo = T.depth[0] + (T.depth[1] - T.depth[0]) * noise2(x, 0, 23);
+    if (T.drips && hash(x >> 3) > 0.72) lo += 8 + hash((x >> 3) + 99) * 26 * Math.sin(((x & 7) / 8) * Math.PI);
+    out[c] = lo;
+  }
+  return out;
+}
+
+// Recolour `o` if pixel (x, y) at depth d lies in the trim band, `lo` deep in this column.
+export function trimPixel(o, T, lo, x, y, d) {
   if (d > lo || (T.gap && d < T.gap)) return;
   const u = d / lo;
   for (let i = 0; i < 3; i++) o[i] = T.lightRgb[i] + (T.darkRgb[i] - T.lightRgb[i]) * u;
@@ -122,14 +132,22 @@ export function openAir(m, w, h) {
 // For each cave pixel (air the sky cannot reach), how far it is to the nearest solid pixel
 // straight left, right, up or down; 0 elsewhere. Shades the cave's back wall.
 export function caveDistance(m, open, w, h) {
-  const dist = new Uint16Array(w * h);
-  const cave = (p) => !m[p] && !open[p];
-  for (let p = 0; p < w * h; p++) if (cave(p)) dist[p] = 65535;
+  const n = w * h;
+  const dist = new Uint16Array(n);
+  const cave = new Uint8Array(n);
+  let any = false;
+  for (let p = 0; p < n; p++) {
+    if (m[p] || open[p]) continue;
+    cave[p] = 1;
+    dist[p] = 65535;
+    any = true;
+  }
+  if (!any) return dist;
   const sweep = (start, step, count, lines) => {
     for (let l = 0; l < lines; l++) {
       let run = 0;
       for (let i = 0, p = start(l); i < count; i++, p += step) {
-        run = cave(p) ? run + 1 : 0;
+        run = cave[p] ? run + 1 : 0;
         if (run && run < dist[p]) dist[p] = run;
       }
     }

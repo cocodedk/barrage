@@ -1,7 +1,7 @@
 // Shells in flight: a glowing trail from a per-projectile history ring (keyed by object
 // identity in a WeakMap, so it vanishes with the shell) and a sprite per kind. Trail points
 // age by time, so a shell that comes to rest loses its tail.
-import { INK, rgba, hash, glow } from './sprites.js';
+import { INK, hash, glow } from './sprites.js';
 
 const TRAIL = 22;
 const TRAIL_LIFE = 0.45; // s a trail point stays visible
@@ -30,13 +30,14 @@ function remember(v, p, t) {
 
 function trail(ctx, h, color, t) {
   ctx.lineCap = 'round';
+  ctx.strokeStyle = color;
   for (const [wide, alpha] of [[9, 0.18], [3.5, 0.75]]) {
     for (let k = 1; k < h.n; k++) {
       const a = (h.i + TRAIL - h.n + k - 1) % TRAIL;
       const b = (a + 1) % TRAIL;
       const f = (k / h.n) * (1 - (t - h.ts[b]) / TRAIL_LIFE);
       if (f <= 0) continue;
-      ctx.strokeStyle = rgba(color, alpha * f);
+      ctx.globalAlpha = alpha * f;
       ctx.lineWidth = 1 + wide * f;
       ctx.beginPath();
       ctx.moveTo(h.xs[a], h.ys[a]);
@@ -44,6 +45,7 @@ function trail(ctx, h, color, t) {
       ctx.stroke();
     }
   }
+  ctx.globalAlpha = 1;
 }
 
 function rocket(ctx, p, t, body, stripe) {
