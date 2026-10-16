@@ -3,6 +3,7 @@
 import { W, H, INK, POWER_COLORS, rgba, shade, roundRect } from './sprites.js';
 import { WEAPONS, weaponById } from '../core/weapons.js';
 import { MAX_HP } from '../core/units.js';
+import { canSwitchWeapon } from '../core/turns.js';
 import { clamp } from '../core/math.js';
 import { drawIcon } from './hud-icons.js';
 
@@ -122,7 +123,7 @@ function weaponBar(ctx, world, color) {
   const y = H - 26 - size;
   WEAPONS.forEach((w, i) => {
     const sel = w.id === turn.weapon;
-    const locked = !sel && turn.shotsFired > 0;
+    const locked = !sel && !canSwitchWeapon(turn);
     const x = x0 + i * (size + gap);
     const yy = sel ? y - 8 : y;
     panel(ctx, x, yy, size, size, sel ? color : undefined, 16);

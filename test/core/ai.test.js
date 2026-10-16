@@ -107,10 +107,10 @@ test('walks into range when the enemy is out of reach from here', () => {
 
 test('plans never mutate the world', () => {
   const w = duel(1);
-  const before = Buffer.from(w.terrain.mask).toString('base64').length + JSON.stringify(w.teams) + w.events.length;
+  const snap = () => [Uint8Array.from(w.terrain.mask), JSON.stringify(w.teams), w.events.length];
+  const before = snap();
   aiPlan(w, makeRng(1));
-  const after = Buffer.from(w.terrain.mask).toString('base64').length + JSON.stringify(w.teams) + w.events.length;
-  assert.equal(after, before);
+  assert.deepEqual(snap(), before);
   assert.equal(w.projectiles.length, 0);
 });
 

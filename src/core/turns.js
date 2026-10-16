@@ -43,9 +43,11 @@ export function setWeapon(world, id) {
   world.turn.shotsLeft = weaponById(id).shots;
 }
 
+export const canSwitchWeapon = (turn) => turn.shotsFired === 0;
+
 function chooseWeapon(world, pick) {
   const w = weaponById(pick);
-  if (w && world.turn.shotsFired === 0) setWeapon(world, w.id);
+  if (w && canSwitchWeapon(world.turn)) setWeapon(world, w.id);
 }
 
 function fire(world, u, intents) {
