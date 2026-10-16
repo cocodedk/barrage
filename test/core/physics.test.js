@@ -5,7 +5,7 @@ import { flatWorld, DT, solidRect } from './helpers.js';
 
 const shell = (over = {}) => ({
   kind: 'bazooka', x: 100, y: 100, vx: 300, vy: -400, windy: false, fuse: null,
-  restitution: 0, radius: 40, damage: 50, owner: 0, ...over,
+  restitution: 0, radius: 40, damage: 50, ...over,
 });
 const fly = (p, world, seconds) => {
   for (let i = 0; i < Math.round(seconds / DT); i++) {

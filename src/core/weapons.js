@@ -36,10 +36,10 @@ export const inFlight = (p) => !p.planted;
 // Where planted dynamite sits under soldier `u`.
 export const dropPoint = (u) => ({ x: u.x, y: u.y - 3 });
 
-export function makeProjectile(w, owner, x, y, vx, vy, extra = {}) {
+export function makeProjectile(w, x, y, vx, vy, extra = {}) {
   return {
     kind: w.id, x, y, vx, vy, windy: w.windy, fuse: w.fuse, restitution: w.restitution,
-    radius: w.r, damage: w.damage, planted: !!w.planted, owner, ...extra,
+    radius: w.r, damage: w.damage, planted: !!w.planted, ...extra,
   };
 }
 
@@ -76,13 +76,13 @@ export function fireWeapon(world, u, w, power, target) {
   if (w.hitscan) return hitscan(world, u, w);
   if (w.planted) {
     const p = dropPoint(u);
-    world.projectiles.push(makeProjectile(w, u.id, p.x, p.y, 0, 0));
+    world.projectiles.push(makeProjectile(w, p.x, p.y, 0, 0));
   } else if (w.target) {
     for (const o of MISSILE_OFFSETS) {
-      world.projectiles.push(makeProjectile(w, u.id, target.x + o, -40, 0, MISSILE_SPEED, { kind: 'missile' }));
+      world.projectiles.push(makeProjectile(w, target.x + o, -40, 0, MISSILE_SPEED, { kind: 'missile' }));
     }
   } else {
     const v = power * MAX_SPEED;
-    world.projectiles.push(makeProjectile(w, u.id, m.x, m.y, d.x * v, d.y * v));
+    world.projectiles.push(makeProjectile(w, m.x, m.y, d.x * v, d.y * v));
   }
 }

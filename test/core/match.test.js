@@ -75,7 +75,7 @@ test('both last soldiers dying in the same turn is a draw', () => {
   w.teams[1].units[0].x = 940;
   hero(w).aim = 0;
   // a point-blank grenade-sized blast on both
-  w.projectiles.push({ kind: 'bazooka', x: 920, y: 789, vx: 0, vy: 10, windy: false, fuse: 0.01, restitution: 0, radius: 60, damage: 400, owner: 0 });
+  w.projectiles.push({ kind: 'bazooka', x: 920, y: 789, vx: 0, vy: 10, windy: false, fuse: 0.01, restitution: 0, radius: 60, damage: 400 });
   run(w, 3);
   assert.equal(w.winner, 'draw');
   assert.deepEqual(eventsOf(w, 'win'), [{ type: 'win', winner: 'draw' }]);
@@ -84,7 +84,7 @@ test('both last soldiers dying in the same turn is a draw', () => {
 test('a settled world with a stuck projectile is handed on after the settle cap', () => {
   const w = flatWorld();
   w.turn.phase = 'settling';
-  w.projectiles.push({ kind: 'dynamite', x: 900, y: 700, vx: 0, vy: 0, windy: false, fuse: 99, restitution: 0.2, radius: 70, damage: 75, owner: 0 });
+  w.projectiles.push({ kind: 'dynamite', x: 900, y: 700, vx: 0, vy: 0, windy: false, fuse: 99, restitution: 0.2, radius: 70, damage: 75 });
   run(w, SETTLE_CAP - 0.5);
   assert.equal(w.turn.team, 0);
   run(w, 1);

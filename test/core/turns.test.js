@@ -102,7 +102,7 @@ test('a shell over the water splashes and is gone', () => {
   const w = flatWorld();
   w.terrain.carve(900, GROUND_PIT, 200);
   w.liquidY = 850;
-  const p = { kind: 'bazooka', x: 900, y: 820, vx: 0, vy: 200, windy: false, fuse: null, restitution: 0, radius: 40, damage: 50, owner: 0 };
+  const p = { kind: 'bazooka', x: 900, y: 820, vx: 0, vy: 200, windy: false, fuse: null, restitution: 0, radius: 40, damage: 50 };
   w.projectiles.push(p);
   run(w, 1);
   assert.equal(w.projectiles.length, 0);

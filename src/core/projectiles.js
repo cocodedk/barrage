@@ -11,7 +11,7 @@ function releaseBomblets(world, p, rng) {
   for (let i = 0; i < BOMBLET.count; i++) {
     const a = BOMBLET_FAN[0] + ((BOMBLET_FAN[1] - BOMBLET_FAN[0]) * i) / (BOMBLET.count - 1);
     const v = between(rng, ...BOMBLET_SPEED);
-    world.projectiles.push(makeProjectile(BOMBLET, p.owner, p.x, p.y - 8, Math.cos(a) * v, -Math.sin(a) * v));
+    world.projectiles.push(makeProjectile(BOMBLET, p.x, p.y - 8, Math.cos(a) * v, -Math.sin(a) * v));
   }
 }
 

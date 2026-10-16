@@ -22,7 +22,7 @@ export function simWorldFor(world, shooter) {
 // A bouncer that has come to rest repeats the same step for ever, so once a step changes nothing
 // only the fuse and the clock still run.
 function flyShell(sw, w, mx, my, vx, vy, dt) {
-  const p = makeProjectile(w, -1, mx, my, vx, vy);
+  const p = makeProjectile(w, mx, my, vx, vy);
   let fuse = w.fuse;
   let still = false;
   for (let t = 0; t < MAX_SIM; t += dt) {
