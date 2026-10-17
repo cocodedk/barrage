@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { WEAPONS, weaponById } from '../../src/core/weapons.js';
+import { WEAPONS, weaponById, aimDegrees } from '../../src/core/weapons.js';
 import { flatWorld, run, shoot, eventsOf, DT, GROUND, hero, solidRect } from './helpers.js';
 
 // Move the shooter's squad mates out of his line of fire.
@@ -171,4 +171,9 @@ test('dynamite is dropped at his feet and goes off after 4 s (r 70)', () => {
   }
   assert.ok(Math.abs(t - 4) < 0.1, `exploded at ${t}`);
   assert.equal(eventsOf(w, 'explosion')[0].r, 70);
+});
+
+test('aimDegrees reads the aim as whole degrees above the horizon, negative below', () => {
+  const deg = (aim) => aimDegrees({ aim, facing: -1 });
+  assert.deepEqual([0, 0.5, Math.PI / 2, -Math.PI / 4].map(deg), [0, 29, 90, -45]);
 });

@@ -44,6 +44,8 @@ export function makeProjectile(w, x, y, vx, vy, extra = {}) {
 }
 
 export const aimDir = (u) => ({ x: u.facing * Math.cos(u.aim), y: -Math.sin(u.aim) });
+// The aim in whole degrees above the horizon, negative below.
+export const aimDegrees = (u) => Math.round((u.aim * 180) / Math.PI);
 
 // Where a shell leaves soldier `u` (feet x, y) fired along unit vector `d`.
 export function muzzle(u, d) {

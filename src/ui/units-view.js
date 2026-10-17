@@ -3,7 +3,7 @@
 // since the last frame (landing, losing hp).
 import { INK_SOFT, POWER_COLORS, rgba, shade, glow, roundRect } from './sprites.js';
 import { drawSoldier, drawGrave } from './soldier.js';
-import { aimDir, weaponById, MISSILE_OFFSETS } from '../core/weapons.js';
+import { aimDir, aimDegrees, weaponById, MISSILE_OFFSETS } from '../core/weapons.js';
 import { activeUnit } from '../core/turns.js';
 
 const RETICLE = 92;
@@ -30,19 +30,38 @@ function visual(v, u, dt) {
   return s;
 }
 
-function label(ctx, u, color) {
-  const text = String(Math.ceil(u.hp));
+// A dark rounded tag centred on (x, y): the HP labels and the aim angle.
+function tag(ctx, x, y, text, rim, ink) {
   ctx.font = 'bold 15px system-ui, sans-serif';
   const w = ctx.measureText(text).width + 12;
-  const y = u.y - 46;
-  roundRect(ctx, u.x - w / 2, y - 10, w, 19, 9);
+  roundRect(ctx, x - w / 2, y - 10, w, 19, 9);
   ctx.fillStyle = 'rgba(10,12,20,0.66)';
   ctx.fill();
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = rgba(color, 0.9);
+  ctx.strokeStyle = rim;
   ctx.stroke();
-  ctx.fillStyle = shade(color, 0.45);
-  ctx.fillText(text, u.x, y + 0.5);
+  ctx.fillStyle = ink;
+  ctx.fillText(text, x, y + 0.5);
+}
+
+function label(ctx, u, color) {
+  tag(ctx, u.x, u.y - 46, String(Math.ceil(u.hp)), rgba(color, 0.9), shade(color, 0.45));
+}
+
+// The aim angle: a horizon tick, an arc from it to the aim line, and the degrees past the reticle.
+function angle(ctx, u, cx, cy, dx, dy) {
+  const from = u.facing > 0 ? 0 : Math.PI;
+  const side = Math.cos(from);
+  for (const [w, s] of [[3.5, 'rgba(10,12,20,0.45)'], [1.5, 'rgba(255,255,255,0.7)']]) {
+    ctx.lineWidth = w;
+    ctx.strokeStyle = s;
+    ctx.beginPath();
+    ctx.moveTo(cx + side * 54, cy);
+    ctx.arc(cx, cy, 44, from, from - u.facing * u.aim, u.facing * u.aim > 0);
+    ctx.stroke();
+  }
+  const d = RETICLE + 38;
+  tag(ctx, cx + dx * d, cy + dy * d, `${aimDegrees(u)}°`, 'rgba(255,255,255,0.9)', '#ffffff');
 }
 
 function marker(ctx, u, color, t) {
@@ -69,6 +88,7 @@ function aim(ctx, u, turn, t) {
   const cx = u.x;
   const cy = u.y - 12;
   const charging = turn.charging;
+  angle(ctx, u, cx, cy, dx, dy);
   for (let d = 26; d < RETICLE - 10; d += 9) {
     const f = (d - 26) / (RETICLE - 36);
     const lit = charging && f <= turn.power;
